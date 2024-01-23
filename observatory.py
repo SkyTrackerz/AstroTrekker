@@ -1,17 +1,30 @@
+from skyCalculator import SkyCalculator
+from skyfield.api import load
+
 class Observatory:
-    def __init__(self):
+    def __init__(self, lattitude, longitude):
         self.targetTurntableAngle = 0
         self.targetTrackAngle = 0
         self.targetPivotAngle = 0
 
-        self.turntableAngle = 0
-        self.trackAngle = 0
-        self.pivotAngle = 0
+        self.skyCalc = SkyCalculator(lattitude, longitude)
 
-    def update_target_angles(self, new_turntable_angle, new_track_angle, new_pivot_angle):
-        self.targetTurntableAngle = new_turntable_angle
-        self.targetTrackAngle = new_track_angle
-        self.targetPivotAngle = new_pivot_angle
+        # Position data given by star tracker GPS and magnetometer:
+        self.lattitude = 38.891329768
+        self.longitude = -77.070166386
+        self.compassHeading = 62.78 # deg around a comapss (NE)
 
-    def update(self):
+    # Called by program to update observatory to new star position
+    def update(self, targetRA, targetDec):
         pass
+
+    # Uses geometry of observatory to calculate the corresponding position of all joints
+    def calculate_target_configuration(self, targetRA, targetDec):
+        pass
+
+    # Actually command the picture/motors to move 
+    def move(self):
+        pass
+
+    
+

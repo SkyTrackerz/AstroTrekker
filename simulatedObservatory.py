@@ -3,11 +3,9 @@ import numpy as np
 from observatory import Observatory
 from math import pi
 
-
 class SimulatedObservatory(Observatory):
-
-    def __init__(self):
-        super().__init__()
+    def __init__(self, lattitude, longitude):
+        super().__init__(lattitude, longitude)
 
         box(pos=vector(0, 0, 0), size=vector(200, 0, 200), color=color.green)
         box(pos=vector(0, 1, 0), size=vector(25, 2, 12), color=color.cyan)
@@ -31,7 +29,7 @@ class SimulatedObservatory(Observatory):
         self.trackGroup = np.array((track, pivot, cameraBody, cameraLens))
         self.pivotGroup = np.array((pivot, cameraBody, cameraLens))
 
-    def update(self):
+    def move(self):
         for obj in self.turntableGroup:
             obj.rotate(angle=self.targetTurntableAngle - self.turntableAngle,
                        axis=vector(0, 1, 0),

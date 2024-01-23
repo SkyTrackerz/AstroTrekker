@@ -1,23 +1,10 @@
-from skyCalculator import SkyCalculator
 from simulatedObservatory import SimulatedObservatory
-from skyfield.api import load
 from time import sleep
+from Programs.pan import Pan    
 
 if __name__ == '__main__':
-    skyCalc = SkyCalculator(38.891329768, -77.070166386)
-
-    planets = load('de421.bsp')
-    mars = planets['mars']
-    skyCalc.get_alt_az(mars)
-
-    simOb = SimulatedObservatory()
-
-    sleep(5)
-    simOb.update_target_angles(0.3, 0, 0)
-    simOb.update()
-    print("Rotated turntable")
-
-    sleep(5)
-    simOb.update_target_angles(0.6, 0, 0)
-    simOb.update()
-    print("Rotated turntable")
+    simOb = SimulatedObservatory(47.6061, -122.3328)
+    panProgram = Pan(1, simOb)
+  
+    while(1):
+        panProgram.run()
