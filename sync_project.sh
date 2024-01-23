@@ -4,7 +4,7 @@
 PROJECT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Define destination directory on the remote server
-DESTINATION="lmaloney@sso.local:/home/lmaloney/SkySprinkler"
+DESTINATION="lmaloney@sso.local:/home/lmaloney"
 
 # Run rsync with .gitignore
 rsync -avz --filter=':- .gitignore' "$PROJECT_DIR" "$DESTINATION"
