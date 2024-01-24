@@ -15,11 +15,13 @@ class Observatory:
         self.compassHeading = 62.78 # deg around a comapss (NE)
 
     # Called by program to update observatory to new star position
-    def update(self, targetRA, targetDec):
+    def update(self, targetAzimuth, targetAltitude):
         pass
 
     # Uses geometry of observatory to calculate the corresponding position of all joints
-    def calculate_target_configuration(self, targetRA, targetDec):
+    def calculate_target_configuration(self, targetAzimuth, targetAltitude):
+        # Use offset from North to calculate device-relative angles
+        # Fill in compass heading
         pass
 
     # Actually command the picture/motors to move 

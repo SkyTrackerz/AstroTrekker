@@ -34,12 +34,14 @@ class StepperMotorDriver:
         # Clean up
         GPIO.cleanup()
 
-# Example usage
-motor = StepperMotorDriver()
-while True:
-    print("moving forward")
-    motor.step_motor(10, 'forward')  # Steps the motor forward 100 steps
-    print("pausing 3 seconds")
-    time.sleep(3)
-    print("moving backward")
-    motor.step_motor(10, 'backward')  # Steps the motor backward 50 steps
+
+if __name__ == '__main__':
+    # Example usage
+    motor = StepperMotorDriver()
+    while True:
+        print("moving forward")
+        motor.step_motor(10, 'forward')  # Steps the motor forward 10 steps
+        print("pausing 3 seconds")
+        time.sleep(3)
+        print("moving backward")
+        motor.step_motor(10, 'backward')  # Steps the motor backward 10 steps
