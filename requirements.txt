@@ -1,0 +1,2 @@
+skyfield~=1.47
+numpy~=1.26.3
