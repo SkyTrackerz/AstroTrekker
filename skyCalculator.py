@@ -16,10 +16,6 @@ class SkyCalculator:
         # Import planets
         planets = load('de421.bsp')
         earth = planets['earth']
-        if elev is not None:
-            if Environment.has_internet:
-                # TODO: Get elevation here
-                pass
         # Define current location
         self.loc: GeographicPosition = earth + wgs84.latlon(lat, long)
 

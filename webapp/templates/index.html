@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>StarTracker Tether</title>
+        <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: url('https://source.unsplash.com/1600x900/?space') no-repeat center center fixed;
+            background-size: cover;
+            color: white;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .content {
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 6em;
+            margin: 0.2em;
+        }
+
+        .location-button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px 40px;
+            border: none;
+            border-radius: 5px;
+            font-size: 3em;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            width: 80%; /* Make the button wider */
+            max-width: 600px; /* Maximum width */
+            margin: 20px auto;
+        }
+
+        .location-button:hover {
+            background-color: #45a049;
+        }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Star Tracker</h1>
+        <button class="location-button" onclick="getLocation()">Send Location & Elevation</button>
+    </div>
+    <script>
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(sendPositionToServer, showError);
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        }
+
+        function sendPositionToServer(position) {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+            const altitude = position.coords.altitude || 'Not available';
+
+            $.ajax({
+                url: '/submit_location',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({latitude, longitude, altitude}),
+                success: function(response) {
+                    console.log(response);
+                    alert('Location sent to server!');
+                },
+                error: function(error) {
+                    console.log(error);
+                    alert('Error sending location to server');
+                }
+            });
+        }
+
+        function showError(error) {
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    alert("User denied the request for Geolocation.");
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    alert("Location information is unavailable.");
+                    break;
+                case error.TIMEOUT:
+                    alert("The request to get user location timed out.");
+                    break;
+                case error.UNKNOWN_ERROR:
+                    alert("An unknown error occurred.");
+                    break;
+            }
+        }
+    </script>
+</body>
+</html>
