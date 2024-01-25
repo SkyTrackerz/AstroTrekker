@@ -4,8 +4,6 @@ from skyfield.api import N, W, wgs84, load
 from skyfield.toposlib import GeographicPosition
 from skyfield.units import Angle
 
-from srtm import Srtm1HeightMapCollection
-
 from environment import Environment
 
 
