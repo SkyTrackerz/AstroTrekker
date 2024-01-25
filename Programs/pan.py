@@ -1,7 +1,7 @@
 from Programs.iprogram import Program
 from time import sleep
 
-from observatory import Observatory
+from observatoryCalculator import Observatory
 
 class Pan(Program):
     def __init__(self, rate, observatory: Observatory):

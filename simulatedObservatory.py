@@ -1,6 +1,6 @@
 from vpython import vector, box, color, cylinder
 import numpy as np
-from observatory import Observatory
+from observatoryCalculator import Observatory
 from math import pi
 
 class SimulatedObservatory(Observatory):

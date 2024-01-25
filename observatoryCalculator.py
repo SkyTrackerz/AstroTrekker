@@ -4,23 +4,25 @@ from operator import mod
 from skyCalculator import SkyCalculator
 from skyfield.api import load
 
-class Observatory:
-    def __init__(self, lattitude, longitude):
+class ObservatoryCalculator:
+    def __init__(self, latitude, longitude):
         self.targetTurntableAngle = 0
         self.targetTrackAngle = 0
         self.targetPivotAngle = 0
 
-        self.skyCalc = SkyCalculator(lattitude, longitude)
+        self.skyCalc = SkyCalculator(latitude, longitude)
 
         # Position data given by star tracker GPS and magnetometer:
-        self.lattitude = 38.891329768
-        self.longitude = -77.070166386
+        self.latitude = latitude
+        self.longitude = longitude
         self.compassHeading = 62.78 # deg around a comapss (NE)
 
     # Called by program to update observatory to new star position
     def update(self, targetAzimuth, targetAltitude):
         pass
 
+    def go_to(self, altitude, azimuth):
+        self.skyCalc.get_local_alt_az()
     # Uses geometry of observatory to calculate the corresponding position of all joints
     def calculate_target_configuration(self, target):
         # Use offset from North to calculate device-relative angles
