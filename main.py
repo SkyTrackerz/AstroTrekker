@@ -1,8 +1,10 @@
+import config
 from simulatedObservatory import SimulatedObservatory
-from time import sleep
 from Programs.pan import Pan
-from environment import Environment
+from motorDriver import MotorDriver
+
 if __name__ == '__main__':
+    motorDriver1 = MotorDriver(config.MOTOR_1)
     simOb = SimulatedObservatory(47.6061, -122.3328)
     panProgram = Pan(1, simOb)
   
