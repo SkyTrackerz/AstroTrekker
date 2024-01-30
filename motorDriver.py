@@ -13,41 +13,62 @@ class MotorDriver:
         GPIO.setmode(GPIO.BOARD)  # Use physical pin numbering
         GPIO.setup(self.motor.step_pin, GPIO.OUT)
         GPIO.setup(self.motor.direction_pin, GPIO.OUT)
-        GPIO.setup(self.motor.enable_pin, GPIO.OUT)
+        if self.motor.enable_pin:
+            GPIO.setup(self.motor.enable_pin, GPIO.OUT)
+            GPIO.output(self.motor.enable_pin, GPIO.LOW)  # Enable the motor
+        
+        
         GPIO.setup(self.motor.limit_pin, GPIO.IN)
         # Initialize ENABLE pin
-        GPIO.output(self.motor.enable_pin, GPIO.LOW)  # Enable the motor
-
-        self.zero()
         self.current_pos = 0
+        self.zero()
 
-    def step_motor(self, steps: int, direction: bool):
-        steps = self._limit_in_range(steps, direction)
+    def step_motor(self, steps: int, direction: bool, rate=1, check_limit=True):
+        if check_limit:
+            steps = self._limit_in_range(steps, direction)
         # Set direction
         GPIO.output(self.motor.direction_pin, GPIO.HIGH if direction else GPIO.LOW)
         # Perform steps
         for _ in range(steps):
             GPIO.output(self.motor.step_pin, GPIO.HIGH)
-            time.sleep(0.01)  # Adjust this delay for speed control
+            time.sleep(0.01 * rate)  # Adjust this delay for speed control
             GPIO.output(self.motor.step_pin, GPIO.LOW)
 
             self.current_pos += 1
             print('*', end='', flush=True)
-            time.sleep(0.01)  # Adjust this delay for speed control
+            time.sleep(0.01 * rate)  # Adjust this delay for speed control
+
+    FORWARD = True
+
+    # ...
 
     def _limit_in_range(self, steps: int, direction: bool) -> int:
-        # TODO: Wrap around
-        if direction == FORWARD:
-            return max(self.current_pos + steps, int(self.motor.max_angle * self.motor.degrees_per_step))
-        return min(self.current_pos - steps, 0)
+        max_steps = int(self.motor.max_angle * self.motor.degrees_per_step)
 
-    def go_to(self, angle: float):
-        self.step_motor(steps=self.motor.degrees_per_step * abs(angle),
-                        direction=angle < 0)
+        if direction == FORWARD:
+            potential_pos = self.current_pos + steps
+            if potential_pos <= max_steps:
+                return steps
+            else:
+                return max_steps - self.current_pos
+        else:
+            potential_pos = self.current_pos - steps
+            if potential_pos >= 0:
+                return steps
+            else:
+                return self.current_pos
+
+    def go_to(self, angle: float, rate=1, check_limit=True):
+        # TODO: rounding errors?
+        self.step_motor(steps=int(abs(angle) / self.motor.degrees_per_step),
+                        direction=angle < 0, rate=rate, check_limit=check_limit)
 
     def zero(self):
+        print('zeroing')
         while not GPIO.input(self.motor.limit_pin):
-            self.step_motor(1, BACKWARD)
+            self.step_motor(10, BACKWARD, rate=0.2, check_limit=False)
+        self.current_pos = 0
+
     def __del__(self):
         # Clean up
         GPIO.cleanup()
