@@ -16,14 +16,12 @@ class MotorDriver:
         if self.motor.enable_pin:
             GPIO.setup(self.motor.enable_pin, GPIO.OUT)
             GPIO.output(self.motor.enable_pin, GPIO.LOW)  # Enable the motor
-        
-        
-        GPIO.setup(self.motor.limit_pin, GPIO.IN)
+        GPIO.setup(self.motor.step_pin, GPIO.IN)
         # Initialize ENABLE pin
         self.current_pos = 0
         self.zero()
 
-    def step_motor(self, steps: int, direction: bool, rate=1, check_limit=True):
+    def step_motor(self, steps: int, direction: bool, seconnds_per_step=1, check_limit=True):
         if check_limit:
             steps = self._limit_in_range(steps, direction)
         # Set direction
@@ -31,16 +29,9 @@ class MotorDriver:
         # Perform steps
         for _ in range(steps):
             GPIO.output(self.motor.step_pin, GPIO.HIGH)
-            time.sleep(0.01 * rate)  # Adjust this delay for speed control
             GPIO.output(self.motor.step_pin, GPIO.LOW)
-
             self.current_pos += 1
-            print('*', end='', flush=True)
-            time.sleep(0.01 * rate)  # Adjust this delay for speed control
-
-    FORWARD = True
-
-    # ...
+            time.sleep(seconnds_per_step)  # Adjust this delay for speed control
 
     def _limit_in_range(self, steps: int, direction: bool) -> int:
         max_steps = int(self.motor.max_angle * self.motor.degrees_per_step)
@@ -58,10 +49,11 @@ class MotorDriver:
             else:
                 return self.current_pos
 
-    def go_to(self, angle: float, rate=1, check_limit=True):
+    def go_to(self, angle: float, degrees_per_second=1, check_limit=True):
+        seconds_per_step = self.motor.degrees_per_step / degrees_per_second
         # TODO: rounding errors?
         self.step_motor(steps=int(abs(angle) / self.motor.degrees_per_step),
-                        direction=angle < 0, rate=rate, check_limit=check_limit)
+                        direction=angle < 0, seconnds_per_step=seconds_per_step, check_limit=check_limit)
 
     def zero(self):
         print('zeroing')

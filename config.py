@@ -6,7 +6,7 @@ TURNTABLE = Motor(
     enable_pin=None,
     direction_pin=24,
     max_angle=300,
-    limit_pin=16
+    limit_pin=8
 )
 
 TURRET = Motor(

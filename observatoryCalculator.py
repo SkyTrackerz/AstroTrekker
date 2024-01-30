@@ -1,31 +1,69 @@
 from math import radians
 from operator import mod
+import config  
+from motorDriver import MotorDriver
+from Motor import Motor
+import time
 
 from skyCalculator import SkyCalculator
 from skyfield.api import load
 
 class ObservatoryCalculator:
-    def __init__(self, latitude, longitude):
-        self.targetTurntableAngle = 0
-        self.targetTrackAngle = 0
-        self.targetPivotAngle = 0
+    def __init__(self, turntable: Motor, turret: Motor, spin: Motor):
+        self._targetTurntableAngle = 0
+        self._targetTurretAngle = 0
+        self._targetPivotAngle = 0
 
-        self.skyCalc = SkyCalculator(latitude, longitude)
+        self._observatoryAltitude = 0
+        self._observatoryAzimuth = 0
+
+        self.turntableConfig = turntable
+        self.turretConfig = turret
+        self.spinConfig = spin
+
+        self.turntable = MotorDriver(turntable)
+        self.turret = MotorDriver(turret)
+        self.spin = MotorDriver(spin)
 
         # Position data given by star tracker GPS and magnetometer:
-        self.latitude = latitude
-        self.longitude = longitude
-        self.compassHeading = 62.78 # deg around a comapss (NE)
+        self._compassHeading = 0 # deg around a comapss (dead N)
 
-    # Called by program to update observatory to new star position
-    def update(self, targetAzimuth, targetAltitude):
-        pass
-
+    # Called by program to update observatory to new star position (this function calls _calculate_target_configuration and _move)
     def go_to(self, altitude, azimuth):
-        self.skyCalc.get_local_alt_az()
+        # Calculate observatory altitude and azimuth based on orientation of observatory
+        self._observatoryAltitude = altitude
+        self._observatoryAzimuth = azimuth - self._compassHeading
+
+        # Calculate what that means for the observatory in terms of joints
+        self._calculate_target_configuration()
+
+        # Command the motors to move
+        self._move()
+        
     # Uses geometry of observatory to calculate the corresponding position of all joints
-    def calculate_target_configuration(self, target):
-        # Use offset from North to calculate device-relative angles
+    def _calculate_target_configuration(self):
+        self._targetTurntableAngle = self._observatoryAzimuth
+        self._targetTurretAngle = self._observatoryAltitude
+
+    # Actually command the motors to move 
+    def _move(self):
+        self.turntable.go_to(self._targetTurntableAngle)
+        self.turret.go_to(self._targetTurretAngle)
+
+if __name__ == '__main__':
+    observatory = ObservatoryCalculator(config.TURNTABLE, config.TURRET, config.SPIN)
+    
+    for i in range(3):
+        for j in range(4):
+            ObservatoryCalculator.goto(45 * i, 90 * j)
+            time.sleep(1)
+
+
+
+
+
+
+""""# Use offset from North to calculate device-relative angles
 
         # Get the local altitude and azimuth relative to the observer
         local_azimuth, local_altitude = self.skyCalc.get_local_alt_az(target)
@@ -60,11 +98,4 @@ class ObservatoryCalculator:
 
         final_azimuth = degrees(final_azimuth_rad)
         final_altitude = degrees(final_altitude_rad)
-        pass
-
-    # Actually command the picture/motors to move 
-    def move(self):
-        pass
-
-    
-
+        """

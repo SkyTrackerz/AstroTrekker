@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 
-
 @dataclass
 class Motor:
     degrees_per_step: float
