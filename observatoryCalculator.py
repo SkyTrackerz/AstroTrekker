@@ -1,15 +1,15 @@
 from math import radians
 from operator import mod
 import config  
-from motorDriver import MotorDriver
-from Motor import Motor
+from motor import Motor
+from MotorConfig import MotorConfig
 import time
 
 from skyCalculator import SkyCalculator
 from skyfield.api import load
 
 class ObservatoryCalculator:
-    def __init__(self, turntable: Motor, turret: Motor, spin: Motor):
+    def __init__(self, turntable: MotorConfig, turret: MotorConfig, spin: MotorConfig):
         self._targetTurntableAngle = 0
         self._targetTurretAngle = 0
         self._targetPivotAngle = 0
@@ -21,9 +21,9 @@ class ObservatoryCalculator:
         self.turretConfig = turret
         self.spinConfig = spin
 
-        self.turntable = MotorDriver(turntable)
-        self.turret = MotorDriver(turret)
-        self.spin = MotorDriver(spin)
+        self.turntable = Motor(turntable)
+        self.turret = Motor(turret)
+        self.spin = Motor(spin)
 
         # Position data given by star tracker GPS and magnetometer:
         self._compassHeading = 0 # deg around a comapss (dead N)
