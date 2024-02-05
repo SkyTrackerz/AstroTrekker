@@ -1,10 +1,25 @@
-from ILimitSwitch import ILimitSwitch
+import logging
+import logging.config
+
+import config
+from .ILimitSwitch import ILimitSwitch
 import RPi.GPIO as GPIO
 class LimitSwitch(ILimitSwitch):
     def __init__(self, pin: int):
         self.pin = pin
         GPIO.setmode(GPIO.BOARD)  # Use physical pin numbering
-        GPIO.setup(pin, GPIO.IN)
+        GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        self.logger = logging.getLogger(__name__)
+
     
     def isActive(self) -> bool:
-        return GPIO.input(self.motor.limit_pin)
+        value = GPIO.input(self.pin)
+        #print(f'Limit Switch value: {GPIO.input(self.pin)}')
+        #self.logger.info()
+        return value
+
+if __name__ == '__main__':
+    logging.basicConfig()
+    switch = LimitSwitch(config.TURNTABLE.limit_switch.pin)
+    while True:
+        switch.isActive()

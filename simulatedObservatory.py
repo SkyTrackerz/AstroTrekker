@@ -1,5 +1,5 @@
-from vpython import vector, box, color, cylinder
-import numpy as np
+#from vpython import vector, box, color, cylinder
+#import numpy as np
 from observatoryCalculator import Observatory
 from math import pi
 

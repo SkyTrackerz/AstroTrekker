@@ -38,7 +38,7 @@ class Environment:
 async def main():
     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
     # Start checking for internet connectivity
-    asyncio.create_task(Environment.start_internet_check(interval=60))
+    await asyncio.create_task(Environment.start_internet_check(interval=60))
 
     # Example of other asynchronous tasks
     await asyncio.sleep(10)

@@ -13,7 +13,6 @@ class Pan(Program):
         print("Intianted program")
 
     def run(self):
-        self.observatory
         sleep(1)
 
         
