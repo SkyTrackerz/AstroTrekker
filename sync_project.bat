@@ -1,14 +1,10 @@
 :: For use in Windows
 @echo off
 
-:: Get the path of the current directory
-SET PROJECT_DIR=%~dp0
+:: Get the current Windows directory and convert it to WSL path format
+:: This replaces 'C:\' with '/mnt/c/' and changes backslashes to forward slashes
+SET CUR_DIR=%CD:C:\=/mnt/c/%
+SET CUR_DIR=%CUR_DIR:\=/%
 
-:: Remove trailing backslash
-SET PROJECT_DIR=%PROJECT_DIR:~0,-1%
-
-:: Define destination directory on the remote server
-SET DESTINATION=lmaloney@sso.local:/home/lmaloney
-
-:: Run rsync with .gitignore (using Git Bash or similar)
-"C:\Program Files\Git\bin\bash.exe" -c "rsync -avz --filter=':- .gitignore' '%PROJECT_DIR%' '%DESTINATION%'"
+:: Run the Linux script using WSL in the current directory
+wsl cd "%CUR_DIR%" && bash ./sync_project.sh
