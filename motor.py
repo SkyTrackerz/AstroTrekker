@@ -1,5 +1,6 @@
 import RPi.GPIO as GPIO
 import time
+import asyncio
 
 import config
 from MotorConfig import MotorConfig
@@ -22,7 +23,6 @@ class Motor:
         # Initialize ENABLE pin
         self.current_pos = 0
         self.logger = logging.getLogger(__name__)
-        self.zero()
 
     def step_motor(self, steps: int, direction: bool, seconds_per_step: float = 1, check_limit=True):
         print(f"stepping {steps} steps in {direction} dir at {seconds_per_step} sps")
@@ -65,28 +65,52 @@ class Motor:
 
     def zero(self):
         self.logger.debug(f'zeroing using {self.motor.limit_switch.__class__.__name__}')
+        if not self.motor.limit_switch:
+            pass
         while not self.motor.limit_switch.isActive():
             self.step_motor(10, not self.motor.forward_direction, seconds_per_step=self._calculate_seconds_per_step(config.zero_degrees_per_sec),
                             check_limit=False)
         self.current_pos = 0
 
-
     def _calculate_seconds_per_step(self, degrees_per_second: float):
         return self.motor.degrees_per_step / degrees_per_second
 
     def __del__(self):
-        # Clean up
-        GPIO.cleanup()
+        # Clean up 
+        #GPIO.cleanup()
+        # TODO: Use pull up resisters so the enable pin defaults to On
+        pass
 
+
+async def main():
+    # Example usage
+    turntable = Motor(config.TURNTABLE)
+    turret = Motor(config.TURRET)
+    spin = Motor(config.SPIN)
+    motor = spin
+
+    #asyncio.run(turntable.zero())
+    #asyncio.run(motor.zero())
+    #asyncio.run(spin.zero())
+
+    print("moving 10 degrees forward")
+    #await motor.go_to(10, 10)
+    while True:
+        print("moving 90 degrees backward")
+        await asyncio.gather(
+            #turntable.go_to(90, 10),
+            asyncio.to_thread(turret.go_to, -90, 60),
+            asyncio.to_thread(spin.go_to, -180, 120) 
+        )
+        print("moving 90 degrees forward")
+        await asyncio.gather(
+            #turntable.go_to(90, 10),
+            asyncio.to_thread(turret.go_to, 90, 60),
+            asyncio.to_thread(spin.go_to, 180, 120) 
+        )
+        print("sleeping")
+        time.sleep(2)
 
 if __name__ == '__main__':
     logging.config.fileConfig('logging.conf')
-    # Example usage
-    motor = Motor(config.TURNTABLE)
-    print("moving 10 degrees forward")
-    motor.go_to(10, 10)
-    while True:
-        print("moving 90 degrees forward")
-        motor.go_to(90, 10)
-        print("moving 90 degrees backward")
-        motor.go_to(-90, 10)
+    asyncio.run(main())

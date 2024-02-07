@@ -4,9 +4,9 @@ from LimitSwitch.LimitSwitch import LimitSwitch
 from LimitSwitch.KeyboardLimitSwitch import KeyboardLimitSwitch
 TURNTABLE = MotorConfig(
     degrees_per_step=1.8 / 4,
-    step_pin=36,
+    step_pin=32,
     enable_pin=None,
-    direction_pin=24,
+    direction_pin=22,
     max_angle=300,
     limit_switch=LimitSwitch(pin=10),
     forward_direction=motor.BACKWARD
@@ -14,11 +14,12 @@ TURNTABLE = MotorConfig(
 
 TURRET = MotorConfig(
     degrees_per_step=1.8,
-    step_pin=32,
+    step_pin=36,
     enable_pin=None,
-    direction_pin=22,
+    direction_pin=24,
     max_angle=300,
-    limit_switch=KeyboardLimitSwitch(key='k'),
+    #limit_switch=KeyboardLimitSwitch(key='k'),
+    limit_switch=LimitSwitch(pin=10),
     forward_direction=motor.FORWARD
 )
 
@@ -28,7 +29,8 @@ SPIN = MotorConfig(
     enable_pin=None,
     direction_pin=18,
     max_angle=300,
-    limit_switch=KeyboardLimitSwitch(key='l'),
+    limit_switch=LimitSwitch(pin=10),
+    #limit_switch=KeyboardLimitSwitch(key='l'),
     forward_direction=motor.FORWARD
 )
 

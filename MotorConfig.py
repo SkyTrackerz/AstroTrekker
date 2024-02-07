@@ -9,5 +9,5 @@ class MotorConfig:
     step_pin: int
     enable_pin: Optional[int]
     direction_pin: int
-    limit_switch: ILimitSwitch
+    limit_switch: Optional[ILimitSwitch]
     forward_direction: bool
