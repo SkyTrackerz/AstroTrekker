@@ -3,7 +3,7 @@ from MotorConfig import MotorConfig
 from LimitSwitch.LimitSwitch import LimitSwitch
 from LimitSwitch.KeyboardLimitSwitch import KeyboardLimitSwitch
 TURNTABLE = MotorConfig(
-    degrees_per_step=1.8 / 4,
+    degrees_per_step=(1.8 / 4) / 16,
     step_pin=32,
     enable_pin=None,
     direction_pin=22,
@@ -13,7 +13,7 @@ TURNTABLE = MotorConfig(
 )
 
 TURRET = MotorConfig(
-    degrees_per_step=1.8,
+    degrees_per_step=1.8 / 16,
     step_pin=36,
     enable_pin=None,
     direction_pin=24,
@@ -24,7 +24,7 @@ TURRET = MotorConfig(
 )
 
 SPIN = MotorConfig(
-    degrees_per_step=1.8,
+    degrees_per_step=1.8 / 16,
     step_pin=26,
     enable_pin=None,
     direction_pin=18,

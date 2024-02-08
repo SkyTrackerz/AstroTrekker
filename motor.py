@@ -1,3 +1,5 @@
+from threading import Event
+
 import RPi.GPIO as GPIO
 import time
 import asyncio
@@ -23,6 +25,19 @@ class Motor:
         # Initialize ENABLE pin
         self.current_pos = 0
         self.logger = logging.getLogger(__name__)
+
+        self.stop_event = Event()  # Use an event for signaling
+        """
+        if motor.limit_switch:
+                motor.limit_switch.add_active_callback(self.stop_callback)
+                motor.limit_switch.add_deactive_callback(self.start_callback)
+    
+    def stop_callback(self):
+        self.stop_event.set()
+
+    def start_callback(self):
+        self.stop_event.clear()
+        """
 
     def step_motor(self, steps: int, direction: bool, seconds_per_step: float = 1, check_limit=True):
         print(f"stepping {steps} steps in {direction} dir at {seconds_per_step} sps")
@@ -92,21 +107,23 @@ async def main():
     #asyncio.run(turntable.zero())
     #asyncio.run(motor.zero())
     #asyncio.run(spin.zero())
-
+    turntable.zero()
     print("moving 10 degrees forward")
     #await motor.go_to(10, 10)
     while True:
         print("moving 90 degrees backward")
         await asyncio.gather(
             #turntable.go_to(90, 10),
-            asyncio.to_thread(turret.go_to, -90, 60),
-            asyncio.to_thread(spin.go_to, -180, 120) 
+            asyncio.to_thread(turntable.go_to, 90, 30),
+            asyncio.to_thread(turret.go_to, -90, 30),
+            asyncio.to_thread(spin.go_to, -180, 60) 
         )
         print("moving 90 degrees forward")
         await asyncio.gather(
             #turntable.go_to(90, 10),
-            asyncio.to_thread(turret.go_to, 90, 60),
-            asyncio.to_thread(spin.go_to, 180, 120) 
+            asyncio.to_thread(turntable.go_to, 90, 30),
+            asyncio.to_thread(turret.go_to, 90, 30),
+            asyncio.to_thread(spin.go_to, 180, 60) 
         )
         print("sleeping")
         time.sleep(2)
