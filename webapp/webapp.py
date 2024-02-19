@@ -1,7 +1,8 @@
 from flask import Flask, render_template, request, jsonify
+from flask_socketio import SocketIO
 
 app = Flask(__name__)
-
+socketio = SocketIO(app, logger=True)
 
 @app.route('/')
 def index():
@@ -21,5 +22,10 @@ def submit_location():
     return jsonify({"status": "success"})
 
 
+@socketio.on('joystick_update')
+def handle_joystick_update(message):
+    print('Joystick X: {}, Y: {}'.format(message['x'], message['y']))
+    # Process joystick data here (e.g., update game controls, send commands to a robot, etc.)
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', ssl_context='adhoc', port=8080, debug=True)
+    socketio.run(app, host='0.0.0.0', ssl_context='adhoc', port=8080, debug=True)

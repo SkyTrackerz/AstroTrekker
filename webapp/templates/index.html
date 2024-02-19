@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>StarTracker Tether</title>
-        <style>
+    <style>
         body {
             margin: 0;
             padding: 0;
@@ -13,6 +14,7 @@
             color: white;
             text-align: center;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100vh;
@@ -38,8 +40,10 @@
             font-size: 3em;
             cursor: pointer;
             transition: background-color 0.3s;
-            width: 80%; /* Make the button wider */
-            max-width: 600px; /* Maximum width */
+            width: 80%;
+            /* Make the button wider */
+            max-width: 600px;
+            /* Maximum width */
             margin: 20px auto;
         }
 
@@ -47,14 +51,18 @@
             background-color: #45a049;
         }
     </style>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
 <body>
     <div class="container">
         <h1>Star Tracker</h1>
         <button class="location-button" onclick="getLocation()">Send Location & Elevation</button>
     </div>
+    <div id="joyDiv" style="width:200px;height:200px;margin-bottom:20px;"></div>
+    <script src="{{url_for('static', filename='js/joy.js')}}"></script>
+    <script src="{{url_for('static', filename='js/socket.io.js')}}" crossorigin="anonymous"></script>
     <script>
+        var socket = io();
+        var joy = new JoyStick('joyDiv', {}, joystickCallback);
         function getLocation() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(sendPositionToServer, showError);
@@ -63,29 +71,35 @@
             }
         }
 
+        function joystickCallback(joystickData) {
+            console.log("x: " + joystickData.x + " y: " + joystickData.y);
+            socket.emit('joystick_update', {x: joystickData.x, y: joystickData.y});
+        }
+
         function sendPositionToServer(position) {
             const latitude = position.coords.latitude;
             const longitude = position.coords.longitude;
             const altitude = position.coords.altitude || 'Not available';
 
-            $.ajax({
-                url: '/submit_location',
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({latitude, longitude, altitude}),
-                success: function(response) {
-                    console.log(response);
-                    alert('Location sent to server!');
+            fetch('/submit_location', {
+                method: 'POST', // or 'PUT'
+                headers: {
+                    'Content-Type': 'application/json',
                 },
-                error: function(error) {
-                    console.log(error);
+                body: JSON.stringify({ latitude, longitude, altitude }),
+            })
+                .then(response => response.json()) // parses JSON response into native JavaScript objects
+                .then(data => {
+                    console.log(data);
+                    alert('Location sent to server!');
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
                     alert('Error sending location to server');
-                }
-            });
+                });
         }
-
         function showError(error) {
-            switch(error.code) {
+            switch (error.code) {
                 case error.PERMISSION_DENIED:
                     alert("User denied the request for Geolocation.");
                     break;
@@ -102,4 +116,5 @@
         }
     </script>
 </body>
+
 </html>
