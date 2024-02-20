@@ -1,7 +1,7 @@
 import config
 from simulatedObservatory import SimulatedObservatory
 from Programs.pan import Pan
-from motor import Motor
+from Motor import Motor
 import logging.config
 
 if __name__ == '__main__':

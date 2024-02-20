@@ -2,8 +2,7 @@ import asyncio
 from threading import Event
 from typing import Tuple
 import config
-from motor import Motor
-from MotorConfig import MotorConfig
+from Motor.Motor import Motor
 import time
 
 
@@ -44,10 +43,9 @@ class StarTracker:
     async def _move(self, target_turntable_angle: float, target_turret_angle: float, degrees_per_second: float,
                     cancellation_event: Event):
         # TODO: Use maths to calculate the vertical/horizontal component degrees per second
-        # TODO: pass cancellation event to the threads
         await asyncio.gather(
-            asyncio.to_thread(self.turntable.go_to, target_turntable_angle, degrees_per_second),
-            asyncio.to_thread(self.turret.go_to, target_turret_angle, degrees_per_second)
+            asyncio.to_thread(self.turntable.go_to, target_turntable_angle, degrees_per_second, cancellation_event),
+            asyncio.to_thread(self.turret.go_to, target_turret_angle, degrees_per_second, cancellation_event)
             # asyncio.to_thread(self.spin.go_to, -180, 60) 
         )
 
