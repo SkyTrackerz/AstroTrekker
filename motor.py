@@ -12,6 +12,8 @@ FORWARD = not BACKWARD
 
 
 class Motor:
+    limit_switch = None
+
     def __init__(self, config: MotorConfig):
         self.config = config
         # Setup GPIO
@@ -27,17 +29,15 @@ class Motor:
         self.logger = logging.getLogger(__name__)
 
         self.stop_event = Event()  # Use an event for signaling
-        """
-        if Motor.limit_switch:
-                Motor.limit_switch.add_active_callback(self.stop_callback)
-                Motor.limit_switch.add_deactive_callback(self.start_callback)
-    
-    def stop_callback(self):
-        self.stop_event.set()
 
-    def start_callback(self):
-        self.stop_event.clear()
-        """
+        if config.limit_switch:
+            self.limit_switch = config.limit_switch
+            Motor.limit_switch.add_active_callback(self.limit_switch_callback)
+
+    def limit_switch_callback(self):
+        self.stop_event.set()
+        self.logger.info("Limit switch detected " + f" from {self.config.name} motor" if self.config.name else "")
+
 
     @property
     def current_angle(self):

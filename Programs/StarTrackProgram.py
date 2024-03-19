@@ -4,7 +4,7 @@ from threading import Lock
 
 from Location import Location
 from Programs.Program import Program
-from SkyCalculator import SkyCalculator
+from skyCalculator import SkyCalculator
 
 from starTracker import StarTracker
 

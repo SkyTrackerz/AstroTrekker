@@ -4,6 +4,7 @@ from typing import Optional
 
 @dataclass
 class MotorConfig:
+    name: Optional[str]
     degrees_per_full_step: float
     microsteps_per_step: float
     max_angle: int

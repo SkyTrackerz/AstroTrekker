@@ -3,6 +3,7 @@ from MotorConfig import MotorConfig
 from LimitSwitch.LimitSwitch import LimitSwitch
 
 TURNTABLE = MotorConfig(
+    name="TURNTABLE",
     degrees_per_full_step=1.8,
     microsteps_per_step=16,
     gear_ratio=160 / 15,
@@ -15,6 +16,7 @@ TURNTABLE = MotorConfig(
 )
 
 TURRET = MotorConfig(
+    name="TURRET",
     degrees_per_full_step=1.8,
     microsteps_per_step=16,
     gear_ratio=100 / 16,
@@ -28,6 +30,7 @@ TURRET = MotorConfig(
 )
 
 SPIN = MotorConfig(
+    name="SPIN",
     degrees_per_full_step=1.8,
     microsteps_per_step=16,
     gear_ratio=100 / 17,
