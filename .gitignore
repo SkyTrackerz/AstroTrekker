@@ -3,3 +3,8 @@
 /__pycache__/
 /de421.bsp
 *.log
+# Storage files
+Storage/Astronomy/*
+*.bsp
+*.dat
+*.download*

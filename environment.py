@@ -1,9 +1,20 @@
 import asyncio
+from pathlib import Path
+
 import aiohttp
 import logging
 
 class Environment:
     has_internet = False
+
+    @staticmethod
+    def get_project_root(relative_path='.git'):
+        current = Path(__file__)  # Start from the current file location
+        while current != current.parent:
+            if current.joinpath(relative_path).exists():  # Check if the marker exists at this level
+                return current
+            current = current.parent
+        return current  # Fallback to the current directory if nothing is found
 
     @staticmethod
     async def check_internet():
@@ -25,6 +36,7 @@ class Environment:
         except asyncio.TimeoutError as te:
             Environment.has_internet = False
             logging.debug(f"Timeout error: {te}")
+        return Environment.has_internet
 
     @staticmethod
     async def start_internet_check(interval=60):
