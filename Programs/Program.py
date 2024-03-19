@@ -5,17 +5,18 @@ from threading import Event
 
 class Program(ABC):
 
+    @abstractmethod
     def __init__(self):
         # TODO: Set max size, which blocks adding to the queue?
         self.command_queue = queue.Queue()
         self.cancellation_event = Event()
-        self.thread = threading.Thread(target=self.run)
+        self.thread = threading.Thread(target=self._run)
 
     def start(self):
         if not self.cancellation_event.is_set():
             self.thread.start()
 
-    def run(self):
+    def _run(self):
         while not self.cancellation_event.is_set():
             try:
                 # If this ends up over-utilizing the CPU by executing too quickly, consider get-waiting for .01 seconds?

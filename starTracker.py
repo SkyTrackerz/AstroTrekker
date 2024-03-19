@@ -1,8 +1,9 @@
 import asyncio
+import math
 from threading import Event
 from typing import Tuple
 import config
-from Motor.Motor import Motor
+from Motor import Motor
 import time
 
 
@@ -34,19 +35,42 @@ class StarTracker:
         # Command the motors to move
         self._move(altitude, azimuth, degrees_per_second, cancellation_event)
 
+    # TODO: Knows how to get to an absolute angle based on current motor positions
+    def go_to_absolute(self, altitude, azimuth, degrees_per_second=10, cancellation_event: Event = None):
+        dx = altitude - self.turntable.current_angle
+        dy = azimuth - self.turret.current_angle
+        # Calculate degrees of direct path
+        # TODO: Fix Approximation, spherical trigonometry required for more accuracy
+        overall_degrees = math.sqrt(dx*dx + dy*dy)
+        inverse_overall_time = degrees_per_second / overall_degrees
+        # Component speeds
+        x_speed = dx * inverse_overall_time
+        y_speed = dy * inverse_overall_time
+
+        asyncio.run(
+            asyncio.gather(
+                asyncio.to_thread(self.turntable.go_to, dx, x_speed, cancellation_event),
+                asyncio.to_thread(self.turret.go_to, dy, y_speed, cancellation_event)
+                # asyncio.to_thread(self.spin.go_to, -180, 60)
+            )
+        )
+
+
     # Uses geometry of observatory to calculate the corresponding position of all joints
     def _calculate_target_configuration(self) -> Tuple[float, float]:
         # Use gyro, do some caluclations
         return
 
     # Actually command the motors to move
-    async def _move(self, target_turntable_angle: float, target_turret_angle: float, degrees_per_second: float,
-                    cancellation_event: Event):
+    def _move(self, target_turntable_angle: float, target_turret_angle: float, degrees_per_second: float,
+                    cancellation_event: Event = None):
         # TODO: Use maths to calculate the vertical/horizontal component degrees per second
-        await asyncio.gather(
-            asyncio.to_thread(self.turntable.go_to, target_turntable_angle, degrees_per_second, cancellation_event),
-            asyncio.to_thread(self.turret.go_to, target_turret_angle, degrees_per_second, cancellation_event)
-            # asyncio.to_thread(self.spin.go_to, -180, 60) 
+        asyncio.run(
+            asyncio.gather(
+                asyncio.to_thread(self.turntable.go_to, target_turntable_angle, degrees_per_second, cancellation_event),
+                asyncio.to_thread(self.turret.go_to, target_turret_angle, degrees_per_second, cancellation_event)
+                # asyncio.to_thread(self.spin.go_to, -180, 60)
+            )
         )
 
 

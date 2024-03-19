@@ -1,8 +1,8 @@
 import time
 from dataclasses import dataclass
+from threading import Lock
 
-from Programs.program import Program
-from time import sleep
+from Programs.Program import Program
 
 from starTracker import StarTracker
 
@@ -14,26 +14,28 @@ class DirectionCommand:
     dir_y: int = 0
 
 
-class Manual(Program):
+class ManualControlProgram(Program):
     """
     @param: star_tracker - The star tracker object to operate on
     @param: velocity - The speed to move the star tracker in, in degrees per second
     """
-
     def __init__(self, star_tracker: StarTracker, velocity: float = 1):
         self.star_tracker = star_tracker
         self._velocity = velocity
         self._target_dir = DirectionCommand
+        self._target_dir_lock = Lock()
         # self._last_move_time = time.time()
         super().__init__()
 
     def handle_command(self, command: DirectionCommand):
-        self._target_dir = command
+        with self._target_dir_lock:
+            self._target_dir = command
 
     def execute(self):
         # TODO: calculate speed based on time since last execution?
-        rel_x, rel_y = self._target_dir.dir_x * self._velocity, self._target_dir.dir_y * self._velocity
-        self.star_tracker.go_relative(rel_x, rel_y, self.cancellation_event)
+        with self._target_dir_lock:
+            rel_x, rel_y = self._target_dir.dir_x/100 * self._velocity, self._target_dir.dir_y/100 * self._velocity
+        self.star_tracker.go_to(rel_x, rel_y, self.cancellation_event)
 
     def _time_since_last_move(self) -> float:
         diff = time.time() - self._last_move_time

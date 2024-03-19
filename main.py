@@ -1,17 +1,23 @@
-import config
-from simulatedObservatory import SimulatedObservatory
-from Programs.pan import Pan
-from Motor import Motor
 import logging.config
+
+import config
+from Motor import Motor
+from StarTrackerService import StarTrackerService
+from starTracker import StarTracker
+from webapp.webapp import WebApp
 
 if __name__ == '__main__':
     logging.config.fileConfig('logging.conf')
     # This is how you get the logger from any class
     logger = logging.getLogger(__name__)
-    logger.log("Starting!")
-    motorDriver1 = Motor(config.TURNTABLE)
-    simOb = SimulatedObservatory(47.6061, -122.3328)
-    panProgram = Pan(1, simOb)
-  
-    while 1:
-        panProgram.run()
+    logger.info("Starting!")
+
+
+    star_tracker = StarTracker(
+        turntable=Motor(config.TURNTABLE),
+        turret = Motor(config.TURRET),
+        spin = Motor(config.SPIN)
+    )
+    star_tracker_service = StarTrackerService(star_tracker)
+    webapp = WebApp(star_tracker_service)
+    webapp.run()

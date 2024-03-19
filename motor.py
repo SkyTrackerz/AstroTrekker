@@ -12,17 +12,18 @@ FORWARD = not BACKWARD
 
 
 class Motor:
-    def __init__(self, motor: MotorConfig):
-        self.motor = motor
+    def __init__(self, config: MotorConfig):
+        self.config = config
         # Setup GPIO
         GPIO.setmode(GPIO.BOARD)  # Use physical pin numbering
-        GPIO.setup(self.motor.step_pin, GPIO.OUT)
-        GPIO.setup(self.motor.direction_pin, GPIO.OUT)
-        if self.motor.enable_pin:
-            GPIO.setup(self.motor.enable_pin, GPIO.OUT)
-            GPIO.output(self.motor.enable_pin, GPIO.LOW)  # Enable the Motor
+        GPIO.setup(self.config.step_pin, GPIO.OUT)
+        GPIO.setup(self.config.direction_pin, GPIO.OUT)
+        if self.config.enable_pin:
+            GPIO.setup(self.config.enable_pin, GPIO.OUT)
+            GPIO.output(self.config.enable_pin, GPIO.LOW)  # Enable the Motor
+
         # Initialize ENABLE pin
-        self.current_pos = 0
+        self.current_step = 0
         self.logger = logging.getLogger(__name__)
 
         self.stop_event = Event()  # Use an event for signaling
@@ -38,60 +39,69 @@ class Motor:
         self.stop_event.clear()
         """
 
+    @property
+    def current_angle(self):
+        return self.config.degrees_per_step * self.current_step
+
     def step_motor(self, steps: int, direction: bool, seconds_per_step: float = 1, check_limit=True, cancellation_event: Event = None):
         print(f"stepping {steps} steps in {direction} dir at {seconds_per_step} sps")
         #if check_limit:
         #    steps = self._limit_in_range(steps, direction)
         # Set direction
-        GPIO.output(self.motor.direction_pin, GPIO.HIGH if direction else GPIO.LOW)
+        GPIO.output(self.config.direction_pin, GPIO.HIGH if direction else GPIO.LOW)
         # Perform steps
         for _ in range(steps):
             if cancellation_event and cancellation_event.is_set():
                 print('Canceled motor!')
                 break
-            GPIO.output(self.motor.step_pin, GPIO.HIGH)
-            GPIO.output(self.motor.step_pin, GPIO.LOW)
-            self.current_pos += 1
+            GPIO.output(self.config.step_pin, GPIO.HIGH)
+            GPIO.output(self.config.step_pin, GPIO.LOW)
+            self.current_step += 1
             #print("*", end="")
             time.sleep(seconds_per_step)  # Adjust this delay for speed control
         print(f'Done at {time.perf_counter()} for sps {seconds_per_step}')
 
     def _limit_in_range(self, steps: int, direction: bool) -> int:
-        max_steps = int(self.motor.max_angle * self.motor.degrees_per_step)
+        max_steps = int(self.config.max_angle * self.config.degrees_per_step)
 
         if direction == FORWARD:
-            potential_pos = self.current_pos + steps
+            potential_pos = self.current_step + steps
             if potential_pos <= max_steps:
                 return steps
             else:
-                return max_steps - self.current_pos
+                return max_steps - self.current_step
         else:
-            potential_pos = self.current_pos - steps
+            potential_pos = self.current_step - steps
             if potential_pos >= 0:
                 return steps
             else:
-                return self.current_pos
+                return self.current_step
 
     def go_to(self, angle: float, degrees_per_second=1, check_limit=True, cancellation_event: Event = None):
         seconds_per_step = self._calculate_seconds_per_step(degrees_per_second)
         step_dir = angle > 0
-        if not self.motor.forward_direction:
+        if not self.config.forward_direction:
             step_dir = not step_dir
         # TODO: rounding errors?
-        self.step_motor(steps=int(abs(angle) / self.motor.degrees_per_step),
+        self.step_motor(steps=int(abs(angle) / self.config.degrees_per_step),
                         direction=step_dir, seconds_per_step=seconds_per_step, check_limit=check_limit, cancellation_event=cancellation_event)
 
+    def go_to_absolute(self, angle: float, degrees_per_second, check_limit=True, cancellation_event = None):
+        current_angle = self.config.degrees_per_step * self.current_step
+        target_rel_angle = current_angle + angle
+        self.go_to(target_rel_angle, degrees_per_second, check_limit, cancellation_event)
+
     def zero(self):
-        self.logger.debug(f'zeroing using {self.motor.limit_switch.__class__.__name__}')
-        if not self.motor.limit_switch:
+        self.logger.debug(f'zeroing using {self.config.limit_switch.__class__.__name__}')
+        if not self.config.limit_switch:
             pass
-        while not self.motor.limit_switch.isActive():
-            self.step_motor(10, not self.motor.forward_direction, seconds_per_step=self._calculate_seconds_per_step(config.zero_degrees_per_sec),
+        while not self.config.limit_switch.isActive():
+            self.step_motor(10, not self.config.forward_direction, seconds_per_step=self._calculate_seconds_per_step(config.zero_degrees_per_sec),
                             check_limit=False)
-        self.current_pos = 0
+        self.current_step = 0
 
     def _calculate_seconds_per_step(self, degrees_per_second: float):
-        return self.motor.degrees_per_step / degrees_per_second
+        return self.config.degrees_per_step / degrees_per_second
 
     def __del__(self):
         # Clean up 
@@ -117,37 +127,37 @@ async def main():
         time.sleep(delay)
         print('Cancelling movement...')
         event.set()
+    
     cancellation_event = Event()  # Define the cancellation event
     cancellation_thread = Thread(target=set_cancellation_event_after_delay, args=(cancellation_event, 7))
-    cancellation_thread.start()
+    #cancellation_thread.start()
 
     # Example usage
     turntable = Motor(config.TURNTABLE)
     turret = Motor(config.TURRET)
     spin = Motor(config.SPIN)
-    motor = spin
 
     #asyncio.run(turntable.zero())
     #asyncio.run(Motor.zero())
     #asyncio.run(spin.zero())
     #turntable.zero()
-    print("moving 10 degrees forward")
     #await Motor.go_to(10, 10)
     try:
         while True and not cancellation_event.is_set():
-            print("moving 90 degrees backward")
-            await asyncio.gather(
-                #turntable.go_to(90, 10),
-                asyncio.to_thread(turntable.go_to, -90, 30, cancellation_event=cancellation_event),
-                asyncio.to_thread(turret.go_to, -90, 30, cancellation_event=cancellation_event),
-                asyncio.to_thread(spin.go_to, -180, 60, cancellation_event=cancellation_event)
-            )
             print("moving 90 degrees forward")
             await asyncio.gather(
                 #turntable.go_to(90, 10),
                 asyncio.to_thread(turntable.go_to, 90, 30, cancellation_event=cancellation_event),
                 asyncio.to_thread(turret.go_to, 90, 30, cancellation_event=cancellation_event),
                 asyncio.to_thread(spin.go_to, 180, 60, cancellation_event=cancellation_event)
+            )
+
+            print("moving 90 degrees backward")
+            await asyncio.gather(
+                #turntable.go_to(90, 10),
+                asyncio.to_thread(turntable.go_to, -90, 30, cancellation_event=cancellation_event),
+                asyncio.to_thread(turret.go_to, -90, 30, cancellation_event=cancellation_event),
+                asyncio.to_thread(spin.go_to, -180, 60, cancellation_event=cancellation_event)
             )
             print("sleeping")
             time.sleep(2)

@@ -1,9 +1,9 @@
-from Programs.program import Program
+from Programs.Program import Program
 from time import sleep
 
 from starTracker import Observatory
 
-class Pan(Program):
+class PanProgram(Program):
     def __init__(self, rate, observatory: Observatory):
         self.current_azimuth = 0
         self.current_altitude = 0
