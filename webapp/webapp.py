@@ -4,7 +4,8 @@ from flask_socketio import SocketIO
 from Location import Location
 from Programs.ManualControlProgram import ManualControlProgram
 from Programs.StarTrackProgram import StarTrackProgram
-from StarTrackerService import StarTrackerService
+from StarTracker.StarTrackerService import StarTrackerService
+
 
 class WebApp:
     def __init__(self, star_tracker_service: StarTrackerService):
@@ -21,7 +22,6 @@ class WebApp:
 
     def index(self):
         return render_template('index.html')
-
 
     def submit_location(self):
         data = request.json
@@ -52,8 +52,10 @@ class WebApp:
         print('Starting program TrackAstro')
         program = StarTrackProgram()
         self.star_tracker_service.start_program(program)
+
     def run(self):
-        self.socketio.run(self.app, host='0.0.0.0', ssl_context='adhoc', port=8080, debug=True)
+        self.socketio.run(self.app, host='0.0.0.0', ssl_context='adhoc', port=8080, debug=True, allow_unsafe_werkzeug=True)
+
 
 if __name__ == '__main__':
     my_app = WebApp()

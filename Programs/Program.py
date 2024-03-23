@@ -23,10 +23,11 @@ class Program(ABC):
                 command = self.command_queue.get_nowait()
                 self.handle_command(command)
             except queue.Empty:
-                self.execute()
+                if self.execute():
+                    break
 
     @abstractmethod
-    def execute(self):
+    def execute(self) -> bool:
         pass
 
     @abstractmethod
