@@ -1,7 +1,7 @@
 from Programs.Program import Program
 from time import sleep
 
-from starTracker import Observatory
+from StarTracker.StarTracker import Observatory
 
 class PanProgram(Program):
     def __init__(self, rate, observatory: Observatory):

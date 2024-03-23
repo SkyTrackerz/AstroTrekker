@@ -4,13 +4,11 @@ from Location import Location
 from Programs.Program import Program
 from Programs.ManualControlProgram import ManualControlProgram, DirectionCommand
 from Programs.StarTrackProgram import StarTrackProgram
-from starTracker import StarTracker
-
-
+from StarTracker.IStarTracker import IStarTracker
 
 
 class StarTrackerService:
-    def __init__(self, star_tracker: StarTracker, location: Location = None):
+    def __init__(self, star_tracker: IStarTracker, location: Location = None):
         self.star_tracker = star_tracker
         self.current_program: Program = ManualControlProgram(self.star_tracker)
         self.location = location
@@ -51,6 +49,7 @@ class StarTrackerService:
 
     def set_location(self, location: Location):
         self.location = location
+
 
 class NoLocationException(Exception):
     pass

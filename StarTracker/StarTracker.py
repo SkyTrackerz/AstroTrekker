@@ -3,8 +3,9 @@ import math
 from threading import Event
 from typing import Tuple
 import config
-from Motor import Motor
 import time
+
+from motor import Motor
 
 
 class StarTracker:

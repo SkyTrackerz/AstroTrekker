@@ -1,6 +1,6 @@
-import Motor
 from MotorConfig import MotorConfig
 from LimitSwitch.LimitSwitch import LimitSwitch
+from motor import Motor
 
 TURNTABLE = MotorConfig(
     name="TURNTABLE",

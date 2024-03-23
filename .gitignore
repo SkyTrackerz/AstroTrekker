@@ -8,3 +8,4 @@ Storage/Astronomy/*
 *.bsp
 *.dat
 *.download*
+*.pyc

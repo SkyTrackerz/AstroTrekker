@@ -2,8 +2,8 @@ import logging.config
 
 import config
 from Motor import Motor
-from StarTrackerService import StarTrackerService
-from starTracker import StarTracker
+from StarTracker.StarTrackerService import StarTrackerService
+from StarTracker.StarTracker import StarTracker
 from webapp.webapp import WebApp
 
 if __name__ == '__main__':

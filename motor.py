@@ -12,6 +12,8 @@ FORWARD = not BACKWARD
 
 
 class Motor:
+    BACKWARD = False
+    FORWARD = not BACKWARD
     limit_switch = None
 
     def __init__(self, config: MotorConfig):

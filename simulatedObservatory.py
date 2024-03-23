@@ -1,6 +1,6 @@
 #from vpython import vector, box, color, cylinder
 #import numpy as np
-from starTracker import Observatory
+from StarTracker.StarTracker import Observatory
 from math import pi
 
 class SimulatedObservatory(Observatory):
