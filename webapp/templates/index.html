@@ -4,21 +4,18 @@
 <head>
     <meta charset="UTF-8">
     <title>StarTracker Tether</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+
     <style>
         body {
-            margin: 0;
-            padding: 0;
             font-family: Arial, sans-serif;
-            background: url('https://source.unsplash.com/1600x900/?space') no-repeat center center fixed;
-            background-size: cover;
-            color: white;
+            /*background: url('https://source.unsplash.com/1600x900/?space') no-repeat center center fixed; */
+            background-color: white;
             text-align: center;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-            overflow: hidden;
         }
 
         .content {
@@ -52,14 +49,24 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>Star Tracker</h1>
         <button class="location-button" onclick="getLocation()">Send Location & Elevation</button>
     </div>
     <div id="joyDiv" style="width:200px;height:200px;margin-bottom:20px;"></div>
+    <form action="/docs/form-submission.html" method="get">
+        <input id="input" type="hidden" name="json">
+        <div id='editor-container'></div>
+        <input id="submit" class="btn btn-primary" width="100" type="submit">
+    </form>
+    <br>
+    <h2>Get params</h2>
+    <pre id="get-params"></pre>
     <script src="{{url_for('static', filename='js/joy.js')}}"></script>
     <script src="{{url_for('static', filename='js/socket.io.js')}}" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@json-editor/json-editor@latest/dist/jsoneditor.min.js"></script>
     <script>
         var socket = io();
         var joy = new JoyStick('joyDiv', {}, joystickCallback);
@@ -73,7 +80,7 @@
 
         function joystickCallback(joystickData) {
             console.log("x: " + joystickData.x + " y: " + joystickData.y);
-            socket.emit('joystick_update', {x: joystickData.x, y: joystickData.y});
+            socket.emit('joystick_update', { x: joystickData.x, y: joystickData.y });
         }
 
         function sendPositionToServer(position) {
@@ -114,6 +121,129 @@
                     break;
             }
         }
+
+        var params = {}
+        for (const [key, value] of new URLSearchParams(window.location.search).entries()) {
+            params[key] = value
+            console.log(key, value)
+        }
+        document.querySelector('#get-params').textContent = JSON.stringify(params, null, 2)
+        var config = {
+            use_name_attributes: false,
+            theme: 'bootstrap4',
+            disable_edit_json: true,
+            disable_properties: true,
+            disable_collapse: true,
+            schema: {
+                'title': 'Program',
+                'type': 'object',
+                'required': [
+                    'name',
+                    'age',
+                    'date',
+                    'favorite_color',
+                    'gender',
+                    'location',
+                    'pets'
+                ],
+                'properties': {
+                    'name': {
+                        'type': 'string',
+                        'description': 'First and Last name',
+                        'minLength': 4,
+                        'default': 'Jeremy Dorn'
+                    },
+                    'age': {
+                        'type': 'integer',
+                        'default': 25,
+                        'minimum': 18,
+                        'maximum': 99
+                    },
+                    'favorite_color': {
+                        'type': 'string',
+                        'format': 'color',
+                        'title': 'favorite color',
+                        'default': '#ffa500'
+                    },
+                    'gender': {
+                        'type': 'string',
+                        'enum': [
+                            'male',
+                            'female',
+                            'other'
+                        ]
+                    },
+                    'date': {
+                        'type': 'string',
+                        'format': 'date',
+                        'options': {
+                            'flatpickr': {}
+                        }
+                    },
+                    'location': {
+                        'type': 'object',
+                        'title': 'Location',
+                        'properties': {
+                            'city': {
+                                'type': 'string',
+                                'default': 'San Francisco'
+                            },
+                            'state': {
+                                'type': 'string',
+                                'default': 'CA'
+                            },
+                            'citystate': {
+                                'type': 'string',
+                                'description': 'This is generated automatically from the previous two fields',
+                                'template': '{{city}}, {{state}}',
+                                'watch': {
+                                    'city': 'location.city',
+                                    'state': 'location.state'
+                                }
+                            }
+                        }
+                    },
+                    'programs': {
+                        'type': 'array',
+                        'format': 'table',
+                        'title': 'Programs',
+                        'uniqueItems': true,
+                        'items': {
+                            'type': 'object',
+                            'title': 'Program',
+                            'properties': {
+                                'type': {
+                                    'type': 'string',
+                                    'enum': [
+                                        'Pan',
+                                        'Track Astronomical',
+                                        'Pan to Astronomical',
+                                        'Standby',
+                                        'other'
+                                    ],
+                                    'default': 'Pan'
+                                },
+                                'name': {
+                                    'type': 'string'
+                                }
+                            }
+                        },
+                        'default': [
+                            {
+                                'type': 'dog',
+                                'name': 'Walter'
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+
+        var editor = new JSONEditor(document.querySelector('#editor-container'), config)
+
+        editor.on('change', function () {
+            document.querySelector('#input').value = JSON.stringify(editor.getValue())
+        })
     </script>
 </body>
 
