@@ -1,18 +1,26 @@
-from Programs.Program import Program
-from time import sleep
+from dataclasses import dataclass
 
-from StarTracker.StarTracker import Observatory
+from Programs.Program import Program
+
+from StarTracker.IStarTracker import IStarTracker
+
+
+@dataclass
+class PanProgramInput:
+    rate: float  # TODO: replace rate with "TIME" so the user can say how long the shot is
+    altitude: float
+    azimuth: float
+
 
 class PanProgram(Program):
-    def __init__(self, rate, observatory: Observatory):
-        self.current_azimuth = 0
-        self.current_altitude = 0
-        self.observatory: Observatory = observatory
-        self.rate = rate
+    Input = PanProgramInput
 
-        print("Intianted program")
+    def __init__(self, input: PanProgramInput, star_tracker: IStarTracker):
+        self.input = input
+        self.star_tracker = star_tracker
 
-    def run(self):
-        sleep(1)
-
-        
+    def execute(self) -> bool:
+        self.star_tracker.go_to_absolute(altitude=self.input.azimuth,
+                                         azimuth=self.input.altitude,
+                                         degrees_per_second=self.input.rate)
+        return True

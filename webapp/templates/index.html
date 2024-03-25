@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>StarTracker Tether</title>
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
 
     <style>
         body {
@@ -56,12 +56,8 @@
         <button class="location-button" onclick="getLocation()">Send Location & Elevation</button>
     </div>
     <div id="joyDiv" style="width:200px;height:200px;margin-bottom:20px;"></div>
-    <form action="/docs/form-submission.html" method="get">
-        <input id="input" type="hidden" name="json">
-        <div id='editor-container'></div>
-        <input id="submit" class="btn btn-primary" width="100" type="submit">
-    </form>
     <br>
+    <div id='editor_holder'></div>
     <h2>Get params</h2>
     <pre id="get-params"></pre>
     <script src="{{url_for('static', filename='js/joy.js')}}"></script>
@@ -121,129 +117,112 @@
                     break;
             }
         }
-
-        var params = {}
-        for (const [key, value] of new URLSearchParams(window.location.search).entries()) {
-            params[key] = value
-            console.log(key, value)
-        }
-        document.querySelector('#get-params').textContent = JSON.stringify(params, null, 2)
-        var config = {
-            use_name_attributes: false,
-            theme: 'bootstrap4',
-            disable_edit_json: true,
-            disable_properties: true,
-            disable_collapse: true,
-            schema: {
-                'title': 'Program',
-                'type': 'object',
-                'required': [
-                    'name',
-                    'age',
-                    'date',
-                    'favorite_color',
-                    'gender',
-                    'location',
-                    'pets'
-                ],
-                'properties': {
-                    'name': {
-                        'type': 'string',
-                        'description': 'First and Last name',
-                        'minLength': 4,
-                        'default': 'Jeremy Dorn'
+        // This is the starting value for the editor
+        // We will use this to seed the initial editor 
+        // and to provide a "Restore to Default" button.
+        var starting_value = [
+            {
+                name: "John Smith",
+                age: 35,
+                gender: "male",
+                location: {
+                    city: "San Francisco",
+                    state: "California",
+                    citystate: ""
+                },
+                pets: [
+                    {
+                        name: "Spot",
+                        type: "dog",
+                        fixed: true
                     },
-                    'age': {
-                        'type': 'integer',
-                        'default': 25,
-                        'minimum': 18,
-                        'maximum': 99
-                    },
-                    'favorite_color': {
-                        'type': 'string',
-                        'format': 'color',
-                        'title': 'favorite color',
-                        'default': '#ffa500'
-                    },
-                    'gender': {
-                        'type': 'string',
-                        'enum': [
-                            'male',
-                            'female',
-                            'other'
-                        ]
-                    },
-                    'date': {
-                        'type': 'string',
-                        'format': 'date',
-                        'options': {
-                            'flatpickr': {}
-                        }
-                    },
-                    'location': {
-                        'type': 'object',
-                        'title': 'Location',
-                        'properties': {
-                            'city': {
-                                'type': 'string',
-                                'default': 'San Francisco'
-                            },
-                            'state': {
-                                'type': 'string',
-                                'default': 'CA'
-                            },
-                            'citystate': {
-                                'type': 'string',
-                                'description': 'This is generated automatically from the previous two fields',
-                                'template': '{{city}}, {{state}}',
-                                'watch': {
-                                    'city': 'location.city',
-                                    'state': 'location.state'
-                                }
-                            }
-                        }
-                    },
-                    'programs': {
-                        'type': 'array',
-                        'format': 'table',
-                        'title': 'Programs',
-                        'uniqueItems': true,
-                        'items': {
-                            'type': 'object',
-                            'title': 'Program',
-                            'properties': {
-                                'type': {
-                                    'type': 'string',
-                                    'enum': [
-                                        'Pan',
-                                        'Track Astronomical',
-                                        'Pan to Astronomical',
-                                        'Standby',
-                                        'other'
-                                    ],
-                                    'default': 'Pan'
-                                },
-                                'name': {
-                                    'type': 'string'
-                                }
-                            }
-                        },
-                        'default': [
-                            {
-                                'type': 'dog',
-                                'name': 'Walter'
-                            }
-                        ]
+                    {
+                        name: "Whiskers",
+                        type: "cat",
+                        fixed: false
                     }
-                }
+                ]
             }
-        }
+        ];
 
-        var editor = new JSONEditor(document.querySelector('#editor-container'), config)
+        // Initialize the editor
+        var editor = new JSONEditor(document.getElementById('editor_holder'), {
+            // Enable fetching schemas via ajax
+            ajax: true,
 
+            // The schema for the editor
+            schema: {
+                type: "array",
+                title: "People",
+                format: "tabs",
+                items: {
+                    title: "Person",
+                    headerTemplate: "{{i}} - {{self.name}}",
+                    oneOf: [
+                        {
+                            $ref: "/programs/pan.json",
+                            title: "Basic Person"
+                        },
+                        {
+                            $ref: "person.json",
+                            title: "Complex Person"
+                        }
+                    ]
+                }
+            },
+
+            // Seed the form with a starting value
+            startval: starting_value,
+
+            // Disable additional properties
+            no_additional_properties: true,
+
+            // Require all properties by default
+            required_by_default: true
+        });
+
+        // Hook up the submit button to log to the console
+        document.getElementById('submit').addEventListener('click', function () {
+            // Get the value from the editor
+            console.log(editor.getValue());
+        });
+
+        // Hook up the Restore to Default button
+        document.getElementById('restore').addEventListener('click', function () {
+            editor.setValue(starting_value);
+        });
+
+        // Hook up the enable/disable button
+        document.getElementById('enable_disable').addEventListener('click', function () {
+            // Enable form
+            if (!editor.isEnabled()) {
+                editor.enable();
+            }
+            // Disable form
+            else {
+                editor.disable();
+            }
+        });
+
+        // Hook up the validation indicator to update its 
+        // status whenever the editor changes
         editor.on('change', function () {
-            document.querySelector('#input').value = JSON.stringify(editor.getValue())
-        })
+            // Get an array of errors from the validator
+            var errors = editor.validate();
+
+            var indicator = document.getElementById('valid_indicator');
+
+            // Not valid
+            if (errors.length) {
+                indicator.style.color = 'red';
+                indicator.textContent = "not valid";
+            }
+            // Valid
+            else {
+                indicator.style.color = 'green';
+                indicator.textContent = "valid";
+            }
+        });
     </script>
 </body>
 

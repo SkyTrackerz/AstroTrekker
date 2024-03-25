@@ -3,7 +3,9 @@ import threading
 from abc import ABC, abstractmethod
 from threading import Event
 
+
 class Program(ABC):
+    Input = None
 
     @abstractmethod
     def __init__(self):
@@ -30,7 +32,6 @@ class Program(ABC):
     def execute(self) -> bool:
         pass
 
-    @abstractmethod
     def handle_command(self, command):
         pass
 

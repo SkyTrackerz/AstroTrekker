@@ -6,7 +6,7 @@ from StarTracker.IStarTracker import IStarTracker
 from skyCalculator import SkyCalculator
 
 
-class StarTrackProgram(Program, ABC):
+class StarTrackProgram(Program):
     """
     @param: star_tracker - The star tracker object to operate on
     @param: velocity - The speed to move the star tracker in, in degrees per second
