@@ -1,8 +1,9 @@
+import importlib
+import pkgutil
 from dataclasses import fields, MISSING
 import typing
 
 from Programs.Program import Program
-
 
 def dataclass_to_json_schema(dataclass):
     properties = {}
@@ -51,6 +52,7 @@ def dataclass_to_json_schema(dataclass):
 
     return schema
 def get_all_program_classes(class_to_check=None):
+    _import_subclasses("Programs")
     """Recursively get all subclasses of Program."""
     all_subclasses = []
     if class_to_check is None:
@@ -60,3 +62,13 @@ def get_all_program_classes(class_to_check=None):
         all_subclasses.extend(get_all_program_classes(subclass))
 
     return all_subclasses
+
+def _import_subclasses(package, recursive=True):
+    """Import all submodules of a module, recursively, including subpackages"""
+    if isinstance(package, str):
+        package = importlib.import_module(package)
+    for loader, name, is_pkg in pkgutil.walk_packages(package.__path__):
+        full_name = package.__name__ + '.' + name
+        importlib.import_module(full_name)
+        if recursive and is_pkg:
+            _import_subclasses(full_name)

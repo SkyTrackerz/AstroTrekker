@@ -20,6 +20,7 @@ class WebApp:
         self.app.add_url_rule('/submit_location', 'submit_location', self.submit_location, methods=['POST'])
         # Define Program routes
         self.app.add_url_rule('/programs', 'list_programs', self.list_programs)
+        self.app.add_url_rule('/programs/<program_name>/schema', 'program_schema', self.program_schema, methods=['GET'])
         # Define SocketIO events
         self.socketio.on_event('joystick_update', self.handle_joystick_update)
 
@@ -41,19 +42,19 @@ class WebApp:
         return jsonify({"status": "success"})
 
     def list_programs(self):
-        program_classes = ProgramUtilities.get_all_program_classes()  # Assumes this function is defined elsewhere
+        program_classes = ProgramUtilities.get_all_program_classes() 
         program_names = [cls.__name__ for cls in program_classes]
         return jsonify(program_names)
 
-    def program_schema(program_name):
-        program_classes = ProgramUtilities.get_all_program_classes()  # Assumes this function is defined elsewhere
+    def program_schema(self, program_name):
+        program_classes = ProgramUtilities.get_all_program_classes() 
         for cls in program_classes:
             if cls.__name__ == program_name:
-                if cls.Inputs is not None:
-                    schema = ProgramUtilities.dataclass_to_json_schema(cls.Inputs)  # Assumes this function is defined elsewhere
+                if cls.Input is not None:
+                    schema = ProgramUtilities.dataclass_to_json_schema(cls.Input) 
                     return jsonify(schema)
                 else:
-                    return jsonify({"error": "No inputs defined for this program"}), 404
+                    return jsonify({})
         return jsonify({"error": "Program not found"}), 404
 
     async def handle_joystick_update(self, message):
