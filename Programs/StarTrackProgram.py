@@ -1,16 +1,17 @@
 from abc import ABC
+from dataclasses import dataclass
 
 from Location import Location
 from Programs.Program import Program
 from StarTracker.IStarTracker import IStarTracker
 from skyCalculator import SkyCalculator
 
+@dataclass
+class StarTrackProgramInput:
+    bodyToTrack: str
 
 class StarTrackProgram(Program):
-    """
-    @param: star_tracker - The star tracker object to operate on
-    @param: velocity - The speed to move the star tracker in, in degrees per second
-    """
+    Input = StarTrackProgramInput
 
     def __init__(self, star_tracker: IStarTracker, location: Location, planet_to_track='Jupiter'):
         self.star_tracker = star_tracker

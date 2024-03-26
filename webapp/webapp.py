@@ -17,10 +17,10 @@ class WebApp:
 
         # Define Flask routes
         self.app.add_url_rule('/', 'index', self.index)
-        self.app.add_url_rule('/submit_location', 'submit_location', self.submit_location, methods=['POST'])
+        self.app.add_url_rule('/api/submit_location', 'submit_location', self.submit_location, methods=['POST'])
         # Define Program routes
-        self.app.add_url_rule('/programs', 'list_programs', self.list_programs)
-        self.app.add_url_rule('/programs/<program_name>/schema', 'program_schema', self.program_schema, methods=['GET'])
+        self.app.add_url_rule('/api/programs', 'list_programs', self.list_programs)
+        self.app.add_url_rule('/api/programs/<program_name>/schema', 'program_schema', self.program_schema, methods=['GET'])
         # Define SocketIO events
         self.socketio.on_event('joystick_update', self.handle_joystick_update)
 

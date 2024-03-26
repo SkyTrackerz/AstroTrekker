@@ -4,13 +4,20 @@
 <head>
     <meta charset="UTF-8">
     <title>StarTracker Tether</title>
+    
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-
+    <!--
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre.min.css">
+<link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-exp.min.css">
+<link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-icons.min.css">
+    -->
     <style>
         body {
             font-family: Arial, sans-serif;
             /*background: url('https://source.unsplash.com/1600x900/?space') no-repeat center center fixed; */
-            background-color: white;
+            background-color:royalblue;
             text-align: center;
             display: flex;
             flex-direction: column;
@@ -29,7 +36,7 @@
         }
 
         .location-button {
-            background-color: #4CAF50;
+            background-color: midnightblue;
             color: white;
             padding: 20px 40px;
             border: none;
@@ -38,6 +45,7 @@
             cursor: pointer;
             transition: background-color 0.3s;
             width: 80%;
+            
             /* Make the button wider */
             max-width: 600px;
             /* Maximum width */
@@ -45,7 +53,7 @@
         }
 
         .location-button:hover {
-            background-color: #45a049;
+            background-color: midnightblue;
         }
     </style>
 </head>
@@ -84,7 +92,7 @@
             const longitude = position.coords.longitude;
             const altitude = position.coords.altitude || 'Not available';
 
-            fetch('/submit_location', {
+            fetch('/api/submit_location', {
                 method: 'POST', // or 'PUT'
                 headers: {
                     'Content-Type': 'application/json',
@@ -117,112 +125,84 @@
                     break;
             }
         }
-        // This is the starting value for the editor
-        // We will use this to seed the initial editor 
-        // and to provide a "Restore to Default" button.
-        var starting_value = [
-            {
-                name: "John Smith",
-                age: 35,
-                gender: "male",
-                location: {
-                    city: "San Francisco",
-                    state: "California",
-                    citystate: ""
-                },
-                pets: [
-                    {
-                        name: "Spot",
-                        type: "dog",
-                        fixed: true
-                    },
-                    {
-                        name: "Whiskers",
-                        type: "cat",
-                        fixed: false
+        fetch('/api/programs')
+            .then(response => response.json())
+            .then(programs => {
+                createEditor(programs);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+
+        function createEditor(programs) {
+            var programSchemas = programs.map(programName => {
+                return {
+                    $ref: `/api/programs/${programName}/schema`,
+                    title: programName 
+                };
+            });
+            JSONEditor.defaults.options.theme = 'bootstrap4';
+
+            var editor = new JSONEditor(document.getElementById('editor_holder'), {
+                ajax: true,
+                schema: {
+                    type: "array",
+                    title: "Programs",
+                    //format: "tabs",
+                    items: {
+                        title: "Program",
+                        //headerTemplate: "{{i}} - {{self.name}}",
+                        oneOf: programSchemas
                     }
-                ]
-            }
-        ];
+                },
+                no_additional_properties: true,
+                required_by_default: true,
+                disable_edit_json: true
+            });
 
-        // Initialize the editor
-        var editor = new JSONEditor(document.getElementById('editor_holder'), {
-            // Enable fetching schemas via ajax
-            ajax: true,
+            // Hook up the submit button to log to the console
+            document.getElementById('submit').addEventListener('click', function () {
+                // Get the value from the editor
+                console.log(editor.getValue());
+            });
 
-            // The schema for the editor
-            schema: {
-                type: "array",
-                title: "People",
-                format: "tabs",
-                items: {
-                    title: "Person",
-                    headerTemplate: "{{i}} - {{self.name}}",
-                    oneOf: [
-                        {
-                            $ref: "/programs/pan.json",
-                            title: "Basic Person"
-                        },
-                        {
-                            $ref: "person.json",
-                            title: "Complex Person"
-                        }
-                    ]
+            // Hook up the Restore to Default button
+            document.getElementById('restore').addEventListener('click', function () {
+                editor.setValue(starting_value);
+            });
+
+            // Hook up the enable/disable button
+            document.getElementById('enable_disable').addEventListener('click', function () {
+                // Enable form
+                if (!editor.isEnabled()) {
+                    editor.enable();
                 }
-            },
+                // Disable form
+                else {
+                    editor.disable();
+                }
+            });
 
-            // Seed the form with a starting value
-            startval: starting_value,
+            // Hook up the validation indicator to update its 
+            // status whenever the editor changes
+            editor.on('change', function () {
+                // Get an array of errors from the validator
+                var errors = editor.validate();
 
-            // Disable additional properties
-            no_additional_properties: true,
+                var indicator = document.getElementById('valid_indicator');
 
-            // Require all properties by default
-            required_by_default: true
-        });
-
-        // Hook up the submit button to log to the console
-        document.getElementById('submit').addEventListener('click', function () {
-            // Get the value from the editor
-            console.log(editor.getValue());
-        });
-
-        // Hook up the Restore to Default button
-        document.getElementById('restore').addEventListener('click', function () {
-            editor.setValue(starting_value);
-        });
-
-        // Hook up the enable/disable button
-        document.getElementById('enable_disable').addEventListener('click', function () {
-            // Enable form
-            if (!editor.isEnabled()) {
-                editor.enable();
-            }
-            // Disable form
-            else {
-                editor.disable();
-            }
-        });
-
-        // Hook up the validation indicator to update its 
-        // status whenever the editor changes
-        editor.on('change', function () {
-            // Get an array of errors from the validator
-            var errors = editor.validate();
-
-            var indicator = document.getElementById('valid_indicator');
-
-            // Not valid
-            if (errors.length) {
-                indicator.style.color = 'red';
-                indicator.textContent = "not valid";
-            }
-            // Valid
-            else {
-                indicator.style.color = 'green';
-                indicator.textContent = "valid";
-            }
-        });
+                // Not valid
+                if (errors.length) {
+                    indicator.style.color = 'red';
+                    indicator.textContent = "not valid";
+                }
+                // Valid
+                else {
+                    indicator.style.color = 'green';
+                    indicator.textContent = "valid";
+                }
+            });
+        }
     </script>
 </body>
 
