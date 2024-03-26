@@ -151,7 +151,7 @@
                 };
             });
             JSONEditor.defaults.options.theme = 'bootstrap4';
-
+            
             var editor = new JSONEditor(document.getElementById('editor_holder'), {
                 ajax: true,
                 schema: {
@@ -171,7 +171,13 @@
                 disable_collapse: true,
                 disable_array_delete_last_row: true
             });
-
+            JSONEditor.defaults.callbacks = {
+                "button": {
+                    "myAction": function (jseditor, e) {
+                        alert('Button action')
+                    }
+                }
+            }
             // Hook up the submit button to log to the console
             document.getElementById('submit').addEventListener('click', function () {
                 // Get the value from the editor
@@ -183,17 +189,6 @@
                 editor.setValue(starting_value);
             });
 
-            // Hook up the enable/disable button
-            document.getElementById('enable_disable').addEventListener('click', function () {
-                // Enable form
-                if (!editor.isEnabled()) {
-                    editor.enable();
-                }
-                // Disable form
-                else {
-                    editor.disable();
-                }
-            });
 
             // Hook up the validation indicator to update its 
             // status whenever the editor changes

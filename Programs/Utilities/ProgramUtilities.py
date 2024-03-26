@@ -38,7 +38,17 @@ def dataclass_to_json_schema(dataclass):
 
         # Update the properties dictionary
         properties[field.name] = field_schema
-
+        properties['button'] = {
+            "propertyOrder": 1,
+            "format": "button",
+            "options": {
+                "button": {
+                "text": "Search",
+                "icon": "search",
+                "action": "myAction",
+                }
+            }
+        }
         # If the field is not optional, add it to the required list
         if not is_optional:
             required.append(field.name)
