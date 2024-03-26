@@ -4,25 +4,34 @@
 <head>
     <meta charset="UTF-8">
     <title>StarTracker Tether</title>
-    
+
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-    <!--
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre.min.css">
-<link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-exp.min.css">
-<link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-icons.min.css">
-    -->
+
     <style>
         body {
             font-family: Arial, sans-serif;
             /*background: url('https://source.unsplash.com/1600x900/?space') no-repeat center center fixed; */
-            background-color:royalblue;
+            background-color: royalblue;
             text-align: center;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
+        }
+
+        /* Overrides bootstrap colors */
+        .btn-secondary {
+            background-color: midnightblue;
+            /* New primary color */
+            border-color: midnightblue;
+            /* New primary border color */
+        }
+
+        .btn-secondary:hover {
+            background-color: midnightblue;
+            /* Darker primary color on hover */
+            border-color: midnightblue;
+            /* Darker primary border on hover */
         }
 
         .content {
@@ -45,7 +54,7 @@
             cursor: pointer;
             transition: background-color 0.3s;
             width: 80%;
-            
+
             /* Make the button wider */
             max-width: 600px;
             /* Maximum width */
@@ -138,7 +147,7 @@
             var programSchemas = programs.map(programName => {
                 return {
                     $ref: `/api/programs/${programName}/schema`,
-                    title: programName 
+                    title: programName
                 };
             });
             JSONEditor.defaults.options.theme = 'bootstrap4';
@@ -157,7 +166,10 @@
                 },
                 no_additional_properties: true,
                 required_by_default: true,
-                disable_edit_json: true
+                disable_edit_json: true,
+                disable_properties: true,
+                disable_collapse: true,
+                disable_array_delete_last_row: true
             });
 
             // Hook up the submit button to log to the console
