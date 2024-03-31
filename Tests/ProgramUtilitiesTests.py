@@ -36,7 +36,7 @@ class TestProgramUtilities(unittest.TestCase):
     def test_get_all_program_classes(self):
         all_classes = get_all_program_classes()
 
-        from Programs.ManualControlProgram import ManualControlProgram
+        from Programs.ManualControlService import ManualControlProgram
         from Programs.PanProgram import PanProgram
         from Programs.StarTrackProgram import StarTrackProgram
 

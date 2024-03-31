@@ -1,11 +1,13 @@
 import importlib
 import pkgutil
+import re
 from dataclasses import fields, MISSING
 import typing
 
 from Programs.Program import Program
 
 def dataclass_to_json_schema(dataclass):
+
     properties = {}
     required = []
 
@@ -38,27 +40,36 @@ def dataclass_to_json_schema(dataclass):
 
         # Update the properties dictionary
         properties[field.name] = field_schema
-        properties['button'] = {
-            "propertyOrder": 1,
-            "format": "button",
-            "options": {
-                "button": {
-                "text": "Search",
-                "icon": "search",
-                "action": "myAction",
-                }
-            }
-        }
+
         # If the field is not optional, add it to the required list
         if not is_optional:
             required.append(field.name)
-
+    """   properties['button'] = {
+        "propertyOrder": 1,
+        "format": "button",
+        "options": {
+            "button": {
+                "text": "Search",
+                "icon": "search",
+                "action": "myAction",
+            }
+        }
+    }"""
+    derived_name = camel_case_to_spaced(dataclass.__name__)
     # Construct and return the JSON schema
     schema = {
         'type': 'object',
-        'properties': properties,
-        'required': required
+        'properties': {
+            # Extra nesting is required so the name is returned by JSON-Editor
+            dataclass.__name__: {
+                'title': derived_name,
+                'type': 'object',
+                'properties': properties,
+            }
+        },
+        #'required': required
     }
+    print(schema)
 
     return schema
 def get_all_program_classes(class_to_check=None):
@@ -72,6 +83,19 @@ def get_all_program_classes(class_to_check=None):
         all_subclasses.extend(get_all_program_classes(subclass))
 
     return all_subclasses
+
+def camel_case_to_spaced(camel_case_string):
+    # Step 1: Add space before uppercase letters to separate words
+    spaced_string = re.sub(r"([A-Z])", r" \1", camel_case_string)
+
+    # Step 2: Strip leading space if it exists
+    spaced_string = spaced_string.strip()
+
+    # Step 3: Check and remove "Input" at the end
+    if spaced_string.endswith("Input"):
+        spaced_string = spaced_string[:-5].strip()
+
+    return spaced_string
 
 def _import_subclasses(package, recursive=True):
     """Import all submodules of a module, recursively, including subpackages"""

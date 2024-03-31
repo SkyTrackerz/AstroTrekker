@@ -13,7 +13,7 @@ class DirectionCommand:
     dir_y: int = 0
 
 
-class ManualControlProgram(Program):
+class ManualControlService():
     """
     @param: star_tracker - The star tracker object to operate on
     @param: velocity - The speed to move the star tracker in, in degrees per second

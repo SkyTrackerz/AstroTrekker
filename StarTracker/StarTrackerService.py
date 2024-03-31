@@ -2,7 +2,7 @@ from typing import Union, Type
 
 from Location import Location
 from Programs.Program import Program
-from Programs.ManualControlProgram import ManualControlProgram, DirectionCommand
+import Programs.ManualControlService as ManualControlService
 from Programs.StarTrackProgram import StarTrackProgram
 from StarTracker.IStarTracker import IStarTracker
 
@@ -10,13 +10,14 @@ from StarTracker.IStarTracker import IStarTracker
 class StarTrackerService:
     def __init__(self, star_tracker: IStarTracker, location: Location = None):
         self.star_tracker = star_tracker
-        self.current_program: Program = ManualControlProgram(self.star_tracker)
+        self.current_program: Program = None
         self.location = location
-        self.current_program.start()
+        #self.current_program.start()
 
     def start_manual_control_program(self):
-        program = ManualControlProgram(self.star_tracker)
-        self.start_program(program)
+        # program = ManualControlProgram(self.star_tracker)
+        # self.start_program(program)
+        pass
 
     def start_star_tracker_program(self):
         if self.location is None:
@@ -42,10 +43,11 @@ class StarTrackerService:
 
     # TODO: come up with generic way to send commands to programs
     async def send_joystick_command(self, x, y):
-        if isinstance(self.current_program, ManualControlProgram):
-            self.current_program.handle_command(DirectionCommand(x, y))
-        else:
-            print("Not a manual control command! ")
+        #if isinstance(self.current_program, ManualControlProgram):
+        #    self.current_program.handle_command(DirectionCommand(x, y))
+        #else:
+        #    print("Not a manual control command! ")
+        pass
 
     def set_location(self, location: Location):
         self.location = location

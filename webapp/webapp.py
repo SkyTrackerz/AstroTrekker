@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, jsonify, Response
 from flask_socketio import SocketIO
 
 from Location import Location
-from Programs.ManualControlProgram import ManualControlProgram
+#from Programs.ManualControlService import ManualControlProgram
 from Programs.StarTrackProgram import StarTrackProgram
 from Programs.Utilities import ProgramUtilities
 from StarTracker.StarTrackerService import StarTrackerService
@@ -58,10 +58,11 @@ class WebApp:
         return jsonify({"error": "Program not found"}), 404
 
     async def handle_joystick_update(self, message):
-        if self.star_tracker_service.current_program is not ManualControlProgram:
-            self.star_tracker_service.start_program(ManualControlProgram)
-        print('Joystick X: {}, Y: {}'.format(message['x'], message['y']))
-        await self.star_tracker_service.send_joystick_command(int(message['x']), int(message['y']))
+        pass
+        #if self.star_tracker_service.current_program is not ManualControlProgram:
+        #    self.star_tracker_service.start_program(ManualControlProgram)
+        #print('Joystick X: {}, Y: {}'.format(message['x'], message['y']))
+        #await self.star_tracker_service.send_joystick_command(int(message['x']), int(message['y']))
 
         # Process joystick data here
 
