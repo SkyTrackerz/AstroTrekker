@@ -12,7 +12,7 @@ class PanProgramInput:
     azimuth: float
 
 
-class PanProgram(Program):
+class PanProgram(Program[PanProgramInput]):
     Input = PanProgramInput
 
     def __init__(self, input: PanProgramInput, star_tracker: IStarTracker):

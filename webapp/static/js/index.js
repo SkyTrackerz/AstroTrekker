@@ -103,7 +103,15 @@ function createEditor(programs) {
     document.getElementById('submit').addEventListener('click', function () {
         // Get the value from the editor
 
+        fetch('/api/programs', {
+            method: 'POST', // or 'PUT'
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(JSON.stringify(editor.getValue())),
+        })
         alert(JSON.stringify(editor.getValue()));
+
     });
 
     // Hook up the Restore to Default button

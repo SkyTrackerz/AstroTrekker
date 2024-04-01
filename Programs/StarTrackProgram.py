@@ -1,25 +1,25 @@
 from abc import ABC
 from dataclasses import dataclass
 
-from Location import Location
 from Programs.Program import Program
-from StarTracker.IStarTracker import IStarTracker
+from StarTracker.StarTrackerService import StarTrackerService
 from skyCalculator import SkyCalculator
+
 
 @dataclass
 class StarTrackProgramInput:
     bodyToTrack: str
 
-class StarTrackProgram(Program):
+
+class StarTrackProgram(Program[StarTrackProgramInput]):
     Input = StarTrackProgramInput
 
-    def __init__(self, star_tracker: IStarTracker, location: Location, planet_to_track='Jupiter'):
-        self.star_tracker = star_tracker
-        self.sky_calculator = SkyCalculator(location)
-        self.sky_calculator.set_target("Jupiter")
+    def __init__(self, input: Input):
+        self.sky_calculator = SkyCalculator(StarTrackerService.Location)
+        self.sky_calculator.set_target(input.bodyToTrack)
         super().__init__()
 
     def execute(self) -> bool:
         target_alt, target_az = self.sky_calculator.get_local_alt_az()
-        self.star_tracker.go_to_absolute(target_alt, target_az, degrees_per_second=1)
+        StarTrackerService.StarTracker.go_to_absolute(target_alt, target_az, degrees_per_second=1)
         return True

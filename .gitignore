@@ -1,7 +1,7 @@
 /venv/
 /.idea/
 /__pycache__/
-/de421.bsp
+/Storage/Astronomy/de421.bsp
 *.log
 # Storage files
 Storage/Astronomy/*

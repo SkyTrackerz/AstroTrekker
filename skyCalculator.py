@@ -10,6 +10,8 @@ from skyfield.starlib import Star
 from skyfield.toposlib import GeographicPosition
 from skyfield.units import Angle
 from skyfield.data import hipparcos
+
+from Location import Location
 from environment import Environment
 import logging
 
@@ -20,12 +22,13 @@ class SkyCalculator:
     """
     If elevation is not provided, SRTM data is used
     """
-    def __init__(self, lat: float, long: float, elev=None):
+    def __init__(self, location: Location):
+         # TODO do this on statup
         self.load_astro_data()
         # Import planets
         self.earth = self.planets['earth']
         # Define current location
-        self.loc: GeographicPosition = self.earth + wgs84.latlon(lat, long)
+        self.loc: GeographicPosition = self.earth + wgs84.latlon(location.latitude, location.longitude)
         self.target = None
         self.star_df = None
         logging.basicConfig(level=logging.WARNING)
@@ -55,15 +58,14 @@ class SkyCalculator:
         self.planets = load('de421.bsp', astro_data_dir)
         hippa_filepath = astro_data_dir / 'hipparcos_data.csv'
 
-        if asyncio.run(Environment.check_internet()):
+        if os.path.exists(hippa_filepath):
+            self.star_df = pd.read_csv(hippa_filepath)
+            logging.info("Using cached star data")
+        elif asyncio.run(Environment.check_internet()):
             with load.open(hipparcos.URL) as f:
                 self.star_df = hipparcos.load_dataframe(f)
                 self.star_df.to_csv(hippa_filepath)
                 logging.info("Loaded and saved star data from internet")
-        elif os.path.exists(hippa_filepath):
-            # Load df from file
-            self.star_df = pd.read_csv(hippa_filepath)
-            logging.info("Using cached star data")
         else:
             # Log a warning if the file is not found
             logging.error(

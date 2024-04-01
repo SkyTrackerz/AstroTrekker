@@ -2,28 +2,29 @@ from typing import Union, Type
 
 from Location import Location
 from Programs.Program import Program
-import Programs.ManualControlService as ManualControlService
-from Programs.StarTrackProgram import StarTrackProgram
 from StarTracker.IStarTracker import IStarTracker
 
 
 class StarTrackerService:
+    StarTracker: IStarTracker = None
+    Location: Location = None
     def __init__(self, star_tracker: IStarTracker, location: Location = None):
-        self.star_tracker = star_tracker
+        StarTrackerService.StarTracker = star_tracker
+        StarTrackerService.Location = location
         self.current_program: Program = None
-        self.location = location
         #self.current_program.start()
 
+    """    
     def start_manual_control_program(self):
         # program = ManualControlProgram(self.star_tracker)
         # self.start_program(program)
         pass
 
-    def start_star_tracker_program(self):
+    def start_star_tracker_program(self, ):
         if self.location is None:
             raise NoLocationException()
-        program = StarTrackProgram(self.star_tracker, self.location, "Jupiter")
-        self.start_program(program)
+        program = StarTrackProgram(StarTrackerService.StarTracker, self.location, "Jupiter")
+        self.start_program(program)"""
 
     def start_program(self, program: Union[Type[Program], Program]):
         if self.current_program is not None:
@@ -32,7 +33,7 @@ class StarTrackerService:
         # Check if 'program' is a subclass of Program
         if isinstance(program, type) and issubclass(program, Program):
             # Instantiate the program
-            self.current_program = program(self.star_tracker)
+            self.current_program = program(StarTrackerService.StarTracker)
         elif isinstance(program, Program):
             # Set the program directly if it's an instance of Program
             self.current_program = program
@@ -50,8 +51,7 @@ class StarTrackerService:
         pass
 
     def set_location(self, location: Location):
-        self.location = location
-
+        StarTrackerService.Location = location
 
 class NoLocationException(Exception):
     pass

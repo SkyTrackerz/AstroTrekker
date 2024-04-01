@@ -9,7 +9,7 @@ class StandbyProgramInput:
     minutes: float
 
 
-class StandbyProgram(Program):
+class StandbyProgram(Program[StandbyProgramInput]):
     Input = StandbyProgramInput
 
     def __init__(self, input: StandbyProgramInput):

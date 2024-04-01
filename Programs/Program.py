@@ -2,10 +2,13 @@ import queue
 import threading
 from abc import ABC, abstractmethod
 from threading import Event
+from typing import Generic, TypeVar
+
+T = TypeVar('T')
 
 
-class Program(ABC):
-    Input = None
+class Program(ABC, Generic[T]):
+    Input: T
 
     @abstractmethod
     def __init__(self):

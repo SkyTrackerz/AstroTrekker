@@ -5,6 +5,7 @@ from Location import Location
 #from Programs.ManualControlService import ManualControlProgram
 from Programs.StarTrackProgram import StarTrackProgram
 from Programs.Utilities import ProgramUtilities
+from StarTracker.MockStarTracker import MockStarTracker
 from StarTracker.StarTrackerService import StarTrackerService
 
 
@@ -20,6 +21,7 @@ class WebApp:
         self.app.add_url_rule('/api/submit_location', 'submit_location', self.submit_location, methods=['POST'])
         # Define Program routes
         self.app.add_url_rule('/api/programs', 'list_programs', self.list_programs)
+        self.app.add_url_rule('/api/programs', 'submit_programs', self.submit_programs, methods=['POST'])
         self.app.add_url_rule('/api/programs/<program_name>/schema', 'program_schema', self.program_schema, methods=['GET'])
         # Define SocketIO events
         self.socketio.on_event('joystick_update', self.handle_joystick_update)
@@ -39,23 +41,29 @@ class WebApp:
         self.star_tracker_service.set_location(Location(latitude=latitude, longitude=longitude, elevation=altitude))
 
         # Process the data as needed
-        return jsonify({"status": "success"})
+        return jsonify({"status": "starting"})
 
     def list_programs(self):
-        program_classes = ProgramUtilities.get_all_program_classes() 
+        program_classes = ProgramUtilities.get_all_program_classes()
         program_names = [cls.__name__ for cls in program_classes]
         return jsonify(program_names)
 
-    def program_schema(self, program_name):
-        program_classes = ProgramUtilities.get_all_program_classes() 
-        for cls in program_classes:
-            if cls.__name__ == program_name:
-                if cls.Input is not None:
-                    schema = ProgramUtilities.dataclass_to_json_schema(cls.Input) 
-                    return jsonify(schema)
-                else:
-                    return jsonify({})
+    def program_schema(self, program_name: str):
+        schema = ProgramUtilities.get_program_input_schema(program_name)
+        if schema:
+            return jsonify(schema)
         return jsonify({"error": "Program not found"}), 404
+    
+    def submit_programs(self):
+        data = request.json
+        # Check if data is None, not a list, or is an empty list
+        if not data or not isinstance(data, list) or len(data) == 0:
+            return jsonify({"error": "No programs submitted"}), 400
+        try:
+            programs = ProgramUtilities.create_programs_from_schema(data)
+        except ValueError as e:
+            return jsonify({"error": str(e)}), 400
+        return jsonify({"status": "success"})
 
     async def handle_joystick_update(self, message):
         pass
@@ -75,9 +83,13 @@ class WebApp:
         self.star_tracker_service.start_program(program)
 
     def run(self):
-        self.socketio.run(self.app, host='0.0.0.0', ssl_context='adhoc', port=8080, debug=True, allow_unsafe_werkzeug=True)
+        self.socketio.run(self.app, host='0.0.0.0',
+                          #ssl_context='adhoc',
+                        port=8080, debug=True, allow_unsafe_werkzeug=True)
 
 
 if __name__ == '__main__':
-    my_app = WebApp()
-    my_app.run()
+    mockStarTracker = MockStarTracker()
+    starTrackerService = StarTrackerService(mockStarTracker)
+    webapp = WebApp(starTrackerService)
+    webapp.run()
