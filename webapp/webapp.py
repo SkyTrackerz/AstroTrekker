@@ -64,6 +64,7 @@ class WebApp:
             programs = ProgramUtilities.create_programs_from_schema(data)
         except (ValueError, AssertionError) as e:
             return jsonify({"error": str(e)}), 400
+        StarTrackerService.start_programs(programs)
         return jsonify({"status": "success"})
 
     async def handle_joystick_update(self, message):

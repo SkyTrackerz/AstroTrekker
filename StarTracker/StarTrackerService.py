@@ -1,8 +1,10 @@
-from typing import Union, Type
+import logging.config
+from typing import Union, Type, List
 
 from Location import Location
 from Programs.Program import Program
 from StarTracker.IStarTracker import IStarTracker
+from config_logging import LOGGING_CONFIG
 
 
 class StarTrackerService:
@@ -12,6 +14,9 @@ class StarTrackerService:
         StarTrackerService.StarTracker = star_tracker
         StarTrackerService.Location = location
         self.current_program: Program = None
+        # Entry point of logging setup in project
+        logging.config.dictConfig(LOGGING_CONFIG)
+        self.logger = logging.getLogger(__name__)
         #self.current_program.start()
 
     """    
@@ -26,9 +31,11 @@ class StarTrackerService:
         program = StarTrackProgram(StarTrackerService.StarTracker, self.location, "Jupiter")
         self.start_program(program)"""
 
-    def start_program(self, program: Union[Type[Program], Program]):
+    def start_programs(self, programs: List[Program]):
         if self.current_program is not None:
+            self.logger.info(f'Stopping currently running program {self.current_program.__name__}')
             self.current_program.stop()
+        self.logger.info(f"Starting programs {[program.__name__ for program in programs]}")
 
         # Check if 'program' is a subclass of Program
         if isinstance(program, type) and issubclass(program, Program):
