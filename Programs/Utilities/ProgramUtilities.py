@@ -6,6 +6,7 @@ from dataclasses import fields, MISSING, is_dataclass
 import typing
 from typing import List, Dict, Type
 
+from Programs.MultiProgram import MultiProgram
 from Programs.Program import Program
 
 
@@ -83,6 +84,9 @@ def get_all_program_classes(class_to_check=None):
     if class_to_check is None:
         class_to_check = Program
     for subclass in class_to_check.__subclasses__():
+        # MultiPrograms are for now only created internally
+        if subclass is MultiProgram:
+            continue
         all_subclasses.append(subclass)
         all_subclasses.extend(get_all_program_classes(subclass))
 

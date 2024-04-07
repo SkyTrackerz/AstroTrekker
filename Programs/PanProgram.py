@@ -1,8 +1,8 @@
 from dataclasses import dataclass
+from threading import Event
 
 from Programs.Program import Program
-
-from StarTracker.IStarTracker import IStarTracker
+from StarTracker.StarTrackerService import StarTrackerService
 
 
 @dataclass
@@ -15,12 +15,13 @@ class PanProgramInput:
 class PanProgram(Program[PanProgramInput]):
     Input = PanProgramInput
 
-    def __init__(self, input: PanProgramInput, star_tracker: IStarTracker):
+    def __init__(self, input: PanProgramInput):
         self.input = input
-        self.star_tracker = star_tracker
+        super().__init__()
 
-    def execute(self) -> bool:
-        self.star_tracker.go_to_absolute(altitude=self.input.azimuth,
-                                         azimuth=self.input.altitude,
-                                         degrees_per_second=self.input.rate)
+    def execute(self, cancellation_event: Event) -> bool:
+        StarTrackerService.StarTracker.go_to_absolute(altitude=self.input.azimuth,
+                                                      azimuth=self.input.altitude,
+                                                      degrees_per_second=self.input.rate,
+                                                      cancellation_event=cancellation_event)
         return True

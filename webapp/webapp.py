@@ -1,12 +1,12 @@
 from flask import Flask, render_template, request, jsonify, Response
 from flask_socketio import SocketIO
-
+import logging
 from Location import Location
 #from Programs.ManualControlService import ManualControlProgram
 from Programs.StarTrackProgram import StarTrackProgram
 from Programs.Utilities import ProgramUtilities
 from StarTracker.MockStarTracker import MockStarTracker
-from StarTracker.StarTrackerService import StarTrackerService
+from StarTracker.StarTrackerService import StarTrackerService, NoLocationException
 
 
 class WebApp:
@@ -26,6 +26,7 @@ class WebApp:
         # Define SocketIO events
         self.socketio.on_event('joystick_update', self.handle_joystick_update)
 
+        self.logger = logging.getLogger(__name__)
     def index(self):
         return render_template('index.html')
 
@@ -52,6 +53,7 @@ class WebApp:
         schema = ProgramUtilities.get_program_input_schema(program_name)
         if schema:
             return jsonify(schema)
+        self.logger.error(f"Program schema requested for unknown program {program_name}")
         return jsonify({"error": "Program not found"}), 404
     
     def submit_programs(self):
@@ -62,9 +64,9 @@ class WebApp:
             return jsonify({"error": "No programs submitted"}), 400
         try:
             programs = ProgramUtilities.create_programs_from_schema(data)
-        except (ValueError, AssertionError) as e:
+        except (ValueError, NoLocationException) as e:
             return jsonify({"error": str(e)}), 400
-        StarTrackerService.start_programs(programs)
+        self.star_tracker_service.start_programs(programs)
         return jsonify({"status": "success"})
 
     async def handle_joystick_update(self, message):

@@ -2,6 +2,7 @@ import logging.config
 from typing import Union, Type, List
 
 from Location import Location
+from Programs.MultiProgram import MultiProgramInput, MultiProgram
 from Programs.Program import Program
 from StarTracker.IStarTracker import IStarTracker
 from config_logging import LOGGING_CONFIG
@@ -31,22 +32,18 @@ class StarTrackerService:
         program = StarTrackProgram(StarTrackerService.StarTracker, self.location, "Jupiter")
         self.start_program(program)"""
 
-    def start_programs(self, programs: List[Program]):
-        if self.current_program is not None:
-            self.logger.info(f'Stopping currently running program {self.current_program.__name__}')
+    def start_programs(self, programs: List[Program]) -> None:
+        if len(programs) == 0:
+            return
+        if self.current_program is not None and not self.current_program.is_done:
+            self.logger.info(f'Stopping currently running program {type(self.current_program).__name__}')
             self.current_program.stop()
-        self.logger.info(f"Starting programs {[program.__name__ for program in programs]}")
-
-        # Check if 'program' is a subclass of Program
-        if isinstance(program, type) and issubclass(program, Program):
-            # Instantiate the program
-            self.current_program = program(StarTrackerService.StarTracker)
-        elif isinstance(program, Program):
-            # Set the program directly if it's an instance of Program
-            self.current_program = program
+        if len(programs) == 1:
+            self.current_program = programs[0]
+            self.logger.info(f"Starting program {type(self.current_program).__name__}")
         else:
-            raise TypeError("Invalid program type")
-
+            self.logger.info(f"Starting MultiProgram of {[type(program).__name__ for program in programs]}")
+            self.current_program = MultiProgram(MultiProgramInput(programs=programs))
         self.current_program.start()
 
     # TODO: come up with generic way to send commands to programs

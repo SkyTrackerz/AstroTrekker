@@ -5,10 +5,11 @@ from typing import Tuple
 import config
 import time
 
+from StarTracker.IStarTracker import IStarTracker
 from motor import Motor
 
 
-class StarTracker:
+class StarTracker(IStarTracker):
     def __init__(self, turntable: Motor, turret: Motor, spin: Motor, compass=None):
         self._targetTurntableAngle = 0
         self._targetTurretAngle = 0

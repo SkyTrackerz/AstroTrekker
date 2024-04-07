@@ -1,5 +1,6 @@
 import time
 from dataclasses import dataclass
+from threading import Event
 
 from Programs.Program import Program
 
@@ -14,7 +15,9 @@ class StandbyProgram(Program[StandbyProgramInput]):
 
     def __init__(self, input: StandbyProgramInput):
         self.input = input
-        pass
+        super().__init__()
 
-    def execute(self) -> bool:
+    def execute(self, cancellation_event: Event) -> bool:
+        # TODO: Add cancellation logic
         time.sleep(self.input.minutes * 60)
+        return True
