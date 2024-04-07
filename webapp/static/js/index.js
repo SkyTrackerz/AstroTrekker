@@ -108,7 +108,7 @@ function createEditor(programs) {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(JSON.stringify(editor.getValue())),
+            body: JSON.stringify(editor.getValue()),
         })
         alert(JSON.stringify(editor.getValue()));
 

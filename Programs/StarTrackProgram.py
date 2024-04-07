@@ -15,6 +15,7 @@ class StarTrackProgram(Program[StarTrackProgramInput]):
     Input = StarTrackProgramInput
 
     def __init__(self, input: Input):
+        assert StarTrackerService.Location is not None, "Location must be set to Star Track"
         self.sky_calculator = SkyCalculator(StarTrackerService.Location)
         self.sky_calculator.set_target(input.bodyToTrack)
         super().__init__()

@@ -56,12 +56,13 @@ class WebApp:
     
     def submit_programs(self):
         data = request.json
+
         # Check if data is None, not a list, or is an empty list
         if not data or not isinstance(data, list) or len(data) == 0:
             return jsonify({"error": "No programs submitted"}), 400
         try:
             programs = ProgramUtilities.create_programs_from_schema(data)
-        except ValueError as e:
+        except (ValueError, AssertionError) as e:
             return jsonify({"error": str(e)}), 400
         return jsonify({"status": "success"})
 
