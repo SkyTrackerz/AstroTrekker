@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Tuple
 
 
 class IStarTracker(ABC):
@@ -11,3 +12,6 @@ class IStarTracker(ABC):
     def go_to_absolute(self, altitude, azimuth, degrees_per_second=10, cancellation_event=None):
         pass
 
+    @abstractmethod
+    def get_current_pos(self) -> Tuple[float,float,float]:
+        pass

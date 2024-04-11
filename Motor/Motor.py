@@ -1,22 +1,25 @@
 from threading import Event, Thread
 
-import RPi.GPIO as GPIO
 import time
 import asyncio
 import config
-from MotorConfig import MotorConfig
+from Motor.IMotor import IMotor
 import logging
 import logging.config
+
+from Motor.MotorConfig import MotorConfig
+
 BACKWARD = False
 FORWARD = not BACKWARD
 
 
-class Motor:
+class Motor(IMotor):
     BACKWARD = False
     FORWARD = not BACKWARD
     limit_switch = None
 
     def __init__(self, config: MotorConfig):
+        import RPi.GPIO as GPIO
         self.config = config
         # Setup GPIO
         GPIO.setmode(GPIO.BOARD)  # Use physical pin numbering
@@ -34,7 +37,7 @@ class Motor:
 
         if config.limit_switch:
             self.limit_switch = config.limit_switch
-            Motor.limit_switch.add_active_callback(self.limit_switch_callback)
+            self.limit_switch.add_active_callback(self.limit_switch_callback)
 
     def limit_switch_callback(self):
         self.stop_event.set()
@@ -44,6 +47,14 @@ class Motor:
     @property
     def current_angle(self):
         return self.config.degrees_per_step * self.current_step
+
+    @property
+    def degrees_per_step(self) -> float:
+        """
+        Calculate the degrees per step based on the degrees per full step,
+        the number of microsteps per full step, and the gear ratio.
+        """
+        return self.config.degrees_per_step
 
     def step_motor(self, steps: int, direction: bool, seconds_per_step: float = 1, check_limit=True, cancellation_event: Event = None):
         print(f"stepping {steps} steps in {direction} dir at {seconds_per_step} sps")
@@ -167,5 +178,5 @@ async def main():
         cancellation_event.set()
 
 if __name__ == '__main__':
-    logging.config.fileConfig('logging.conf')
+    logging.config.fileConfig('../logging.conf')
     asyncio.run(main())

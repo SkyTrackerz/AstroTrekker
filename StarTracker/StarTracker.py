@@ -1,16 +1,18 @@
 import asyncio
+import logging
 import math
 from threading import Event
 from typing import Tuple
 import config
 import time
 
+from Motor.IMotor import IMotor
 from StarTracker.IStarTracker import IStarTracker
-from motor import Motor
+from Motor.Motor import Motor
 
 
 class StarTracker(IStarTracker):
-    def __init__(self, turntable: Motor, turret: Motor, spin: Motor, compass=None):
+    def __init__(self, turntable: IMotor, turret: IMotor, spin: IMotor, compass=None):
         self._targetTurntableAngle = 0
         self._targetTurretAngle = 0
         self._targetPivotAngle = 0
@@ -24,6 +26,8 @@ class StarTracker(IStarTracker):
 
         # Position data given by star tracker GPS and magnetometer:
         self._compassHeading = 0  # deg around a comapss (dead N)
+
+        self.logger = logging.getLogger(__name__)
 
     # Called by program to update observatory to new star position (this function calls _calculate_target_configuration and _move)
     def go_to(self, altitude, azimuth, degrees_per_second, cancellation_event: Event = None):
@@ -44,19 +48,39 @@ class StarTracker(IStarTracker):
         # Calculate degrees of direct path
         # TODO: Fix Approximation, spherical trigonometry required for more accuracy
         overall_degrees = math.sqrt(dx*dx + dy*dy)
+        min_operable_degree = min((self.turntable.degrees_per_step, self.turret.degrees_per_step, self.spin.degrees_per_step))
+        if overall_degrees < min_operable_degree:
+            self.logger.debug(f"Skipping movement as requested overall angle {overall_degrees} is less than min operable angle {min_operable_degree}")
+            return
         inverse_overall_time = degrees_per_second / overall_degrees
         # Component speeds
         x_speed = dx * inverse_overall_time
         y_speed = dy * inverse_overall_time
+        self.logger.info(f"Speed components to move {degrees_per_second} deg/sec. X: {x_speed}, Y:{y_speed}")
+        # This function is intended to be called within a new thread,
+        # and sets up its own event loop for asyncio operations.
 
-        asyncio.run(
-            asyncio.gather(
-                asyncio.to_thread(self.turntable.go_to, dx, x_speed, cancellation_event),
-                asyncio.to_thread(self.turret.go_to, dy, y_speed, cancellation_event)
-                # asyncio.to_thread(self.spin.go_to, -180, 60)
+        # Create a new event loop for the current thread.
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
+        try:
+            # Now you can safely run asyncio operations in this thread.
+            loop.run_until_complete(
+                asyncio.gather(
+                    asyncio.to_thread(self.turntable.go_to, dx, x_speed, cancellation_event),
+                    asyncio.to_thread(self.turret.go_to, dy, y_speed, cancellation_event)
+                    # asyncio.to_thread(self.spin.go_to, -180, 60)
+                )
             )
-        )
+        finally:
+            loop.close()
 
+    """
+    Returns a tuple of alt, az, spin
+    """
+    def get_current_pos(self) -> Tuple[float,float,float]:
+        return self.turntable.current_angle, self.turret.current_angle, self.spin.current_angle
 
     # Uses geometry of observatory to calculate the corresponding position of all joints
     def _calculate_target_configuration(self) -> Tuple[float, float]:
@@ -67,13 +91,23 @@ class StarTracker(IStarTracker):
     def _move(self, target_turntable_angle: float, target_turret_angle: float, degrees_per_second: float,
                     cancellation_event: Event = None):
         # TODO: Use maths to calculate the vertical/horizontal component degrees per second
-        asyncio.run(
-            asyncio.gather(
-                asyncio.to_thread(self.turntable.go_to, target_turntable_angle, degrees_per_second, cancellation_event),
-                asyncio.to_thread(self.turret.go_to, target_turret_angle, degrees_per_second, cancellation_event)
-                # asyncio.to_thread(self.spin.go_to, -180, 60)
+        # This function is intended to be called within a new thread,
+        # and sets up its own event loop for asyncio operations.
+
+        # Create a new event loop for the current thread.
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            # Now you can safely run asyncio operations in this thread.
+            loop.run_until_complete(
+                asyncio.gather(
+                    asyncio.to_thread(self.turntable.go_to, target_turntable_angle, degrees_per_second, cancellation_event),
+                    asyncio.to_thread(self.turret.go_to, target_turret_angle, degrees_per_second, cancellation_event)
+                    # asyncio.to_thread(self.spin.go_to, -180, 60)
+                )
             )
-        )
+        finally:
+            loop.close()
 
 
 if __name__ == '__main__':
