@@ -6,12 +6,9 @@ import config
 from Motor.IMotor import IMotor
 import logging
 import logging.config
+import RPi.GPIO as GPIO
 
 from Motor.MotorConfig import MotorConfig
-
-BACKWARD = False
-FORWARD = not BACKWARD
-
 
 class Motor(IMotor):
     BACKWARD = False
@@ -19,7 +16,6 @@ class Motor(IMotor):
     limit_switch = None
 
     def __init__(self, config: MotorConfig):
-        import RPi.GPIO as GPIO
         self.config = config
         # Setup GPIO
         GPIO.setmode(GPIO.BOARD)  # Use physical pin numbering
@@ -63,21 +59,24 @@ class Motor(IMotor):
         # Set direction
         GPIO.output(self.config.direction_pin, GPIO.HIGH if direction else GPIO.LOW)
         # Perform steps
+        half_seconds_per_step = seconds_per_step / 2
+        step_inc = 1 if direction == self.config.forward_direction else -1
         for _ in range(steps):
             if cancellation_event and cancellation_event.is_set():
-                print('Canceled motor!')
+                self.logger.debug(f"Cancelled motor {self.config.name}")
                 break
             GPIO.output(self.config.step_pin, GPIO.HIGH)
+            time.sleep(half_seconds_per_step)
             GPIO.output(self.config.step_pin, GPIO.LOW)
-            self.current_step += 1
+            self.current_step += step_inc
             #print("*", end="")
-            time.sleep(seconds_per_step)  # Adjust this delay for speed control
+            time.sleep(half_seconds_per_step)  # Adjust this delay for speed control
         print(f'Done at {time.perf_counter()} for sps {seconds_per_step}')
 
     def _limit_in_range(self, steps: int, direction: bool) -> int:
         max_steps = int(self.config.max_angle * self.config.degrees_per_step)
 
-        if direction == FORWARD:
+        if direction == self.FORWARD:
             potential_pos = self.current_step + steps
             if potential_pos <= max_steps:
                 return steps
@@ -91,7 +90,11 @@ class Motor(IMotor):
                 return self.current_step
 
     def go_to(self, angle: float, degrees_per_second=1, check_limit=True, cancellation_event: Event = None):
+        self.logger.debug(f"Go to called on {self.config.name}. Angle: {angle}, dps: {degrees_per_second}, checkLimit: {check_limit}")
+        if angle == 0:
+            return
         seconds_per_step = self._calculate_seconds_per_step(degrees_per_second)
+        self.logger.debug(f"calculated seconds per step: {seconds_per_step}")
         step_dir = angle > 0
         if not self.config.forward_direction:
             step_dir = not step_dir

@@ -4,6 +4,8 @@ from typing import Optional
 
 
 class IMotor(ABC):
+    BACKWARD = False
+    FORWARD = not BACKWARD
     @abstractmethod
     def limit_switch_callback(self):
         pass
