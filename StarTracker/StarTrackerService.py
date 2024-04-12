@@ -46,6 +46,11 @@ class StarTrackerService:
             self.current_program = MultiProgram(MultiProgramInput(programs=programs))
         self.current_program.start()
 
+    def cancel_program(self):
+        if self.current_program:
+            self.logger.info(f"Stopping current program {self.current_program.__class__.__name__}")
+            self.current_program.stop()
+
     # TODO: come up with generic way to send commands to programs
     async def send_joystick_command(self, x, y):
         #if isinstance(self.current_program, ManualControlProgram):

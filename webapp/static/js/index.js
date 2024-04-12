@@ -13,6 +13,13 @@ function joystickCallback(joystickData) {
     socket.emit('joystick_update', { x: joystickData.x, y: joystickData.y });
 }
 
+document.getElementById('cancel').addEventListener('click', function () {
+    // Get the value from the editor
+
+    fetch('/api/programs/cancel', {
+        method: 'POST'
+    })
+});
 function sendPositionToServer(position) {
     const latitude = position.coords.latitude;
     const longitude = position.coords.longitude;

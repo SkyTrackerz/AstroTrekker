@@ -24,8 +24,8 @@ class PanProgram(Program[PanProgramInput]):
     def execute(self, cancellation_event: Event) -> bool:
         self.logger.info(f"Starting pan program. Moving from {StarTrackerService.StarTracker.get_current_pos()}"
                          f"to ({self.input.altitude}, {self.input.azimuth}")
-        StarTrackerService.StarTracker.go_to_absolute(altitude=self.input.azimuth,
-                                                      azimuth=self.input.altitude,
+        StarTrackerService.StarTracker.go_to_absolute(altitude=self.input.altitude,
+                                                      azimuth=self.input.azimuth,
                                                       degrees_per_second=self.input.rate,
                                                       cancellation_event=cancellation_event)
         return True

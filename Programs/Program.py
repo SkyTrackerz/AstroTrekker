@@ -55,6 +55,6 @@ class Program(ABC, Generic[T]):
         pass
 
     def stop(self):
-        self.cancellation_event.is_set()
+        self.cancellation_event.set()
         if self.thread:
             self.thread.join()

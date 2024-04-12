@@ -14,7 +14,11 @@ class WebApp:
         self.star_tracker_service = star_tracker_service
 
         self.app = Flask(__name__)
-        self.socketio = SocketIO(self.app, logger=True)
+        # Disable Werkzeug logging
+        log = logging.getLogger('werkzeug')
+        log.setLevel(logging.ERROR)
+        log.addHandler(logging.NullHandler())
+        self.socketio = SocketIO(self.app, logger=False)
 
         # Define Flask routes
         self.app.add_url_rule('/', 'index', self.index)
@@ -23,8 +27,9 @@ class WebApp:
         self.app.add_url_rule('/api/programs', 'list_programs', self.list_programs)
         self.app.add_url_rule('/api/programs', 'submit_programs', self.submit_programs, methods=['POST'])
         self.app.add_url_rule('/api/programs/<program_name>/schema', 'program_schema', self.program_schema, methods=['GET'])
+        self.app.add_url_rule('/api/programs/cancel', 'cancel_program', self.cancel_program, methods=['POST'])
         # Define SocketIO events
-        self.socketio.on_event('joystick_update', self.handle_joystick_update)
+        #self.socketio.on_event('joystick_update', self.handle_joystick_update)
 
         self.logger = logging.getLogger(__name__)
     def index(self):
@@ -69,6 +74,12 @@ class WebApp:
         self.star_tracker_service.start_programs(programs)
         return jsonify({"status": "success"})
 
+    def cancel_program(self):
+        self.logger.info("Cancel program called")
+        self.star_tracker_service.cancel_program()
+        return jsonify({"status": "success"})
+
+
     async def handle_joystick_update(self, message):
         pass
         #if self.star_tracker_service.current_program is not ManualControlProgram:
@@ -89,7 +100,7 @@ class WebApp:
     def run(self):
         self.socketio.run(self.app, host='0.0.0.0',
                           #ssl_context='adhoc',
-                        port=8080, debug=True, allow_unsafe_werkzeug=True)
+                        port=8080, debug=False, allow_unsafe_werkzeug=True)
 
 
 if __name__ == '__main__':

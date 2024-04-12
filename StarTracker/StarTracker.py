@@ -8,7 +8,6 @@ import time
 
 from Motor.IMotor import IMotor
 from StarTracker.IStarTracker import IStarTracker
-from Motor.Motor import Motor
 
 
 class StarTracker(IStarTracker):
@@ -43,8 +42,11 @@ class StarTracker(IStarTracker):
 
     # TODO: Knows how to get to an absolute angle based on current motor positions
     def go_to_absolute(self, altitude, azimuth, degrees_per_second=10, cancellation_event: Event = None):
-        dx = altitude - self.turntable.current_angle
-        dy = azimuth - self.turret.current_angle
+        dx = azimuth - self.turntable.current_angle
+        self.logger.debug(f'DX = target ({azimuth}) - current ({self.turntable.current_angle}) = {dx}')
+        dy = altitude - self.turret.current_angle
+        self.logger.debug(f'DY = target ({altitude}) - current ({self.turret.current_angle}) = {dy}')
+
         # Calculate degrees of direct path
         # TODO: Fix Approximation, spherical trigonometry required for more accuracy
         overall_degrees = math.sqrt(dx*dx + dy*dy)
@@ -54,8 +56,8 @@ class StarTracker(IStarTracker):
             return
         inverse_overall_time = degrees_per_second / overall_degrees
         # Component speeds
-        x_speed = dx * inverse_overall_time
-        y_speed = dy * inverse_overall_time
+        x_speed = abs(dx * inverse_overall_time)
+        y_speed = abs(dy * inverse_overall_time)
         self.logger.info(f"Speed components to move {degrees_per_second} deg/sec. X: {x_speed}, Y:{y_speed}")
         # This function is intended to be called within a new thread,
         # and sets up its own event loop for asyncio operations.
@@ -68,8 +70,8 @@ class StarTracker(IStarTracker):
             # Now you can safely run asyncio operations in this thread.
             loop.run_until_complete(
                 asyncio.gather(
-                    asyncio.to_thread(self.turntable.go_to, dx, x_speed, cancellation_event),
-                    asyncio.to_thread(self.turret.go_to, dy, y_speed, cancellation_event)
+                    asyncio.to_thread(self.turntable.go_to, dx, x_speed, True, cancellation_event),
+                    asyncio.to_thread(self.turret.go_to, dy, y_speed, True, cancellation_event)
                     # asyncio.to_thread(self.spin.go_to, -180, 60)
                 )
             )
