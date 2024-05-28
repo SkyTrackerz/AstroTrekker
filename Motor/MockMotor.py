@@ -1,3 +1,4 @@
+import logging
 from threading import Event
 from typing import Optional
 
@@ -8,26 +9,27 @@ class MockMotor(IMotor):
     def __init__(self, config):
         self.config = config
         self.current_step = 0
-        print("Mock motor initialized with config:", config)
+        self.logger = logging.getLogger(__name__)
+        self.logger.info("Mock motor initialized with config:", config)
 
     def limit_switch_callback(self):
-        print("Mock limit switch callback triggered")
+        self.logger.info("Mock limit switch callback triggered")
 
     @property
     def current_angle(self) -> float:
         return self.config.degrees_per_step * self.current_step
 
     def step_motor(self, steps: int, direction: bool, seconds_per_step: float = 1, check_limit=True, cancellation_event: Optional[Event] = None):
-        print(f"Mock stepping {steps} steps in {'FORWARD' if direction else 'BACKWARD'} direction at {seconds_per_step} seconds per step")
+        self.logger.info(f"Mock stepping {steps} steps in {'FORWARD' if direction else 'BACKWARD'} direction at {seconds_per_step} seconds per step")
 
     def go_to(self, angle: float, degrees_per_second=1, check_limit=True, cancellation_event: Optional[Event] = None):
-        print(f"Mock going to angle {angle} at {degrees_per_second} degrees per second")
+        self.logger.info(f"Mock going to angle {angle} at {degrees_per_second} degrees per second")
 
     def go_to_absolute(self, angle: float, degrees_per_second, check_limit=True, cancellation_event: Optional[Event] = None):
-        print(f"Mock going to absolute angle {angle} at {degrees_per_second} degrees per second")
+        self.logger.info(f"Mock going to absolute angle {angle} at {degrees_per_second} degrees per second")
 
     def zero(self):
-        print("Mock zeroing")
+        self.logger.info("Mock zeroing")
 
     @property
     def degrees_per_step(self) -> float:
