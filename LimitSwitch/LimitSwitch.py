@@ -1,6 +1,5 @@
 import logging
 import logging.config
-
 import RPi.GPIO as GPIO
 from typing import Callable
 
@@ -12,9 +11,9 @@ class LimitSwitch(ILimitSwitch):
     def __init__(self, pin: int):
         self.pin = pin
         GPIO.setmode(GPIO.BOARD)  # Use physical pin numbering
-        GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        GPIO.setup(pin, GPIO.IN)
         self.logger = logging.getLogger(__name__)
-        GPIO.add_event_detect(pin, GPIO.RISING)
+        GPIO.add_event_detect(pin, GPIO.RISING, bouncetime=200)
 
     def isActive(self) -> bool:
         value = GPIO.input(self.pin)
