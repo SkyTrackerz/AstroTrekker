@@ -1,5 +1,6 @@
 from Motor.IMotor import IMotor
 from Motor.MotorConfig import MotorConfig
+from LimitSwitch.LimitSwitch import LimitSwitch
 
 TURNTABLE = MotorConfig(
     name="TURNTABLE",
@@ -18,14 +19,14 @@ TURNTABLE = MotorConfig(
 TURRET = MotorConfig(
     name="TURRET",
     degrees_per_full_step=1.8,
-    microsteps_per_step=1,
+    microsteps_per_step=16,
     gear_ratio=100 / 16,
     step_pin=13,
     enable_pin=26,
     direction_pin=38,
     max_angle=270,
+    limit_switch=LimitSwitch(pin=31),
     #limit_switch=KeyboardLimitSwitch(key='k'),
-    limit_switch=None,
     forward_direction=IMotor.FORWARD
 )
 

@@ -13,7 +13,7 @@ class LimitSwitch(ILimitSwitch):
         GPIO.setmode(GPIO.BOARD)  # Use physical pin numbering
         GPIO.setup(pin, GPIO.IN)
         self.logger = logging.getLogger(__name__)
-        GPIO.add_event_detect(pin, GPIO.RISING, bouncetime=200)
+        #GPIO.add_event_detect(pin, GPIO.FALLING)
 
     def isActive(self) -> bool:
         value = GPIO.input(self.pin)
@@ -22,7 +22,8 @@ class LimitSwitch(ILimitSwitch):
         return value
 
     def add_active_callback(self, callback: Callable):
-        GPIO.add_event_callback(self.pin, callback)
+        #GPIO.add_event_callback(self.pin, callback)
+        pass
 
 if __name__ == '__main__':
     #switch = LimitSwitch(config.TURNTABLE.limit_switch.pin)
