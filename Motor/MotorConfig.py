@@ -14,6 +14,7 @@ class MotorConfig:
     limit_switch: Optional[ILimitSwitch]
     forward_direction: bool
     gear_ratio: float = 1
+    offset_angle: float = 0
 
     @property
     def degrees_per_step(self) -> float:
