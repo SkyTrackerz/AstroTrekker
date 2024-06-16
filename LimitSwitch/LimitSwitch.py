@@ -11,7 +11,7 @@ class LimitSwitch(ILimitSwitch):
     def __init__(self, pin: int):
         self.pin = pin
         GPIO.setmode(GPIO.BOARD)  # Use physical pin numbering
-        GPIO.setup(pin, GPIO.IN)
+        GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
         self.logger = logging.getLogger(__name__)
         #GPIO.add_event_detect(pin, GPIO.FALLING)
 

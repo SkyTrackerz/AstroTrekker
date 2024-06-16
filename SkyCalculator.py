@@ -34,6 +34,7 @@ class SkyCalculator:
         self.loc: GeographicPosition = self.earth + wgs84.latlon(location.latitude, location.longitude)
         self.target = None
         logging.basicConfig(level=logging.WARNING)
+
     def set_target(self, target: Union[str, int]) -> bool:
         if target in self.planets:
             self.target = self.planets[target]
