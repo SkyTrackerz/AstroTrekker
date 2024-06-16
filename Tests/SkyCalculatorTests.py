@@ -1,9 +1,6 @@
 import unittest
 from unittest.mock import patch
-from skyfield.api import load
-from skyCalculator import SkyCalculator
-from environment import Environment
-import pytest
+from SkyCalculator import SkyCalculator
 
 class TestSkyCalculator(unittest.TestCase):
 

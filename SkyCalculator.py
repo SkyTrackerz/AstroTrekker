@@ -1,5 +1,6 @@
 import asyncio
 import os
+from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
@@ -7,6 +8,7 @@ from typing import Tuple, Union
 
 from skyfield.api import N, W, wgs84, Loader
 from skyfield.starlib import Star
+from skyfield.timelib import Time
 from skyfield.toposlib import GeographicPosition
 from skyfield.units import Angle
 from skyfield.data import hipparcos
@@ -18,12 +20,11 @@ import logging
 STORAGE_DIR_PATH = 'Storage/Astronomy'
 
 class SkyCalculator:
-
     """
     If elevation is not provided, SRTM data is used
     """
     def __init__(self, location: Location):
-         # TODO do this on statup
+        # TODO do this on startup
         self.astro_data_dir = Environment.get_project_root() / STORAGE_DIR_PATH
         self.skyfield_loader = Loader(self.astro_data_dir)
         self.star_df = None
@@ -44,15 +45,15 @@ class SkyCalculator:
         return False
 
 
-    def get_local_alt_az(self) -> Tuple[Angle, Angle]:
-        # Get current time from skyfield
+    def get_local_alt_az(self, time: datetime = None) -> Tuple[Angle, Angle]:
         ts = self.skyfield_loader.timescale()
-        t = ts.now()
-
+        if time is None:
+            t = ts.now()
+        else:
+            t = ts.from_datetime(time)
         # Observe target object
         astronomic = self.loc.at(t).observe(self.target)
         alt, az, dist = astronomic.apparent().altaz()
-
         return alt, az
 
     def load_astro_data(self):

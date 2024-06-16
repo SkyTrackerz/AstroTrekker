@@ -7,7 +7,6 @@ from StarTracker.StarTracker import StarTracker
 from Motor.Motor import Motor
 from webapp.webapp import WebApp
 import argparse
-from remote_pdb import RemotePdb
 
 if __name__ == '__main__':
 
@@ -23,8 +22,6 @@ if __name__ == '__main__':
 
     if args.debug:
         logger.info("Remote debugger is enabled.")
-        RemotePdb('0.0.0.0', 4444).set_trace()
-
 
     star_tracker = StarTracker(
         turntable=Motor(config.TURNTABLE),
