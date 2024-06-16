@@ -83,7 +83,9 @@ class StarTracker(IStarTracker):
         """
 
     # Function to run the go_to methods concurrently
-    def run_go_tos_concurrently(self, dx, dy, x_speed, y_speed, cancellation_event):
+    def run_go_tos_concurrently(self, dx, dy, x_speed, y_speed, cancellation_event: Event = None):
+       if cancellation_event is None:
+           cancellation_event = Event()
         with ThreadPoolExecutor() as executor:
             futures = [
                 executor.submit(self.turntable.go_to, dx, x_speed, True, cancellation_event),
@@ -91,10 +93,22 @@ class StarTracker(IStarTracker):
                 # Uncomment the following line if you need to include spin.go_to
                 # executor.submit(spin.go_to, -180, 60)
             ]
+        try:
             # Wait for all futures to complete
             for future in futures:
                 future.result()
-
+        finally:
+            self.cleanup()
+        
+                
+    def cleanup_threads(self, executor, cancellation_event):
+        print("Cleaning up threads...")
+        self.logger.debug("Cleaning up threads...")
+        self.cancellation_event.set()
+        self.executor.shutdown(wait=True)
+        self.cancellation_event.clear()
+        print("Threads cleaned up!")
+        self.logger.debug("Cleaning up threads...")
 
     def zero(self):
         """
