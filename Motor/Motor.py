@@ -27,13 +27,23 @@ class Motor(IMotor):
 
         # Initialize ENABLE pin
         self.current_step = 0
+
+        logging.config.fileConfig('logging.conf')
         self.logger = logging.getLogger(__name__)
 
         self.stop_event = Event()  # Use an event for signaling
 
         if config.limit_switch:
             self.limit_switch = config.limit_switch
-            self.limit_switch.add_active_callback(self.limit_switch_callback)
+            #self.limit_switch.add_active_callback(self.limit_switch_callback)
+
+    def enable(self):
+        if self.config.enable_pin:
+            GPIO.output(self.config.enable_pin, GPIO.LOW)
+
+    def disable(self):
+        if self.config.enable_pin:
+            GPIO.output(self.config.enable_pin, GPIO.HIGH)
 
     def limit_switch_callback(self):
         self.stop_event.set()
@@ -42,7 +52,7 @@ class Motor(IMotor):
 
     @property
     def current_angle(self):
-        return self.config.degrees_per_step * self.current_step
+        return self.calculate_current_angle()
 
     @property
     def degrees_per_step(self) -> float:
@@ -52,8 +62,11 @@ class Motor(IMotor):
         """
         return self.config.degrees_per_step
 
+    def should_stop(self, direction: bool):
+        return direction != self.config.forward_direction and self.limit_switch.isActive()
+
     def step_motor(self, steps: int, direction: bool, seconds_per_step: float = 1, check_limit=True, cancellation_event: Event = None):
-        print(f"stepping {steps} steps in {direction} dir at {seconds_per_step} sps")
+        #print(f"stepping {steps} steps in {direction} dir at {seconds_per_step} sps")
         #if check_limit:
         #    steps = self._limit_in_range(steps, direction)
         # Set direction
@@ -61,8 +74,9 @@ class Motor(IMotor):
         # Perform steps
         half_seconds_per_step = seconds_per_step / 2
         step_inc = 1 if direction == self.config.forward_direction else -1
-        for _ in range(steps):
-            if cancellation_event and cancellation_event.is_set():
+        for i in range(steps):
+            if i% 10 == 0 and self.should_stop(direction) or (cancellation_event and cancellation_event.is_set()):
+                print(f"Stopping motor stepping {steps} in {direction} dir because cancellation or limit switch")
                 self.logger.debug(f"Cancelled motor {self.config.name}")
                 break
             GPIO.output(self.config.step_pin, GPIO.HIGH)
@@ -71,7 +85,7 @@ class Motor(IMotor):
             self.current_step += step_inc
             #print("*", end="")
             time.sleep(half_seconds_per_step)  # Adjust this delay for speed control
-        print(f'Done at {time.perf_counter()} for sps {seconds_per_step}')
+        #print(f'Done at {time.perf_counter()} for sps {seconds_per_step}')
 
     def _limit_in_range(self, steps: int, direction: bool) -> int:
         max_steps = int(self.config.max_angle * self.config.degrees_per_step)
@@ -103,9 +117,13 @@ class Motor(IMotor):
                         direction=step_dir, seconds_per_step=seconds_per_step, check_limit=check_limit, cancellation_event=cancellation_event)
 
     def go_to_absolute(self, angle: float, degrees_per_second, check_limit=True, cancellation_event = None):
-        current_angle = self.config.degrees_per_step * self.current_step
-        target_rel_angle = current_angle + angle
+        current_angle = self.calculate_current_angle()
+        print(f"calculated current angle as {current_angle}")
+        target_rel_angle = angle - current_angle
         self.go_to(target_rel_angle, degrees_per_second, check_limit, cancellation_event)
+
+    def calculate_current_angle(self):
+        return self.config.degrees_per_step * self.current_step + self.config.offset_angle
 
     def zero(self):
         self.logger.debug(f'zeroing using {self.config.limit_switch.__class__.__name__}')

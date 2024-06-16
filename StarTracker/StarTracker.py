@@ -5,6 +5,7 @@ from threading import Event
 from typing import Tuple
 import config
 import time
+from concurrent.futures import ThreadPoolExecutor
 
 from Motor.IMotor import IMotor
 from StarTracker.IStarTracker import IStarTracker
@@ -62,6 +63,8 @@ class StarTracker(IStarTracker):
         # This function is intended to be called within a new thread,
         # and sets up its own event loop for asyncio operations.
 
+        self.run_go_tos_concurrently(dx, dy, x_speed, y_speed, cancellation_event)
+        """
         # Create a new event loop for the current thread.
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
@@ -77,7 +80,51 @@ class StarTracker(IStarTracker):
             )
         finally:
             loop.close()
+        """
 
+    # Function to run the go_to methods concurrently
+    def run_go_tos_concurrently(self, dx, dy, x_speed, y_speed, cancellation_event):
+        with ThreadPoolExecutor() as executor:
+            futures = [
+                executor.submit(self.turntable.go_to, dx, x_speed, True, cancellation_event),
+                executor.submit(self.turret.go_to, dy, y_speed, True, cancellation_event)
+                # Uncomment the following line if you need to include spin.go_to
+                # executor.submit(spin.go_to, -180, 60)
+            ]
+            # Wait for all futures to complete
+            for future in futures:
+                future.result()
+
+
+    def zero(self):
+        """
+        # Create a new event loop for the current thread.
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
+        try:
+            # Now you can safely run asyncio operations in this thread.
+            loop.run_until_complete(
+                asyncio.gather(
+                    asyncio.to_thread(self.turntable.zero),
+                    asyncio.to_thread(self.turret.zero)
+                    # asyncio.to_thread(self.spin.zero,)
+                )
+            )
+        finally:
+            loop.close()
+        """
+        with ThreadPoolExecutor() as executor:
+            futures = [
+                executor.submit(self.turntable.zero),
+                executor.submit(self.turret.zero)
+                # Uncomment the following line if you need to include spin.go_to
+                # executor.submit(spin.go_to, -180, 60)
+            ]
+            # Wait for all futures to complete
+            for future in futures:
+                future.result()
+                
     """
     Returns a tuple of alt, az, spin
     """

@@ -9,3 +9,11 @@ Storage/Astronomy/*
 *.dat
 *.download*
 *.pyc
+
+# Ignore all Jupyter notebook checkpoints
+**/.ipynb_checkpoints/
+.config/jupyter/**
+# Ignore JupyterLab language server protocol (LSP) symlink and virtual documents
+.lsp_symlink
+.virtual_documents/
+
