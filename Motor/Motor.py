@@ -68,11 +68,10 @@ class Motor(IMotor):
         return stop_from_cancellation or stop_from_limit
 
 
-    def step_motor(self, steps: int, direction: bool, seconds_per_step: float = 1, check_limit=True, zeroing=False,
-                   cancellation_event: Event = None):
-        # print(f"stepping {steps} steps in {direction} dir at {seconds_per_step} sps")
-        # if check_limit:
-        #    steps = self._limit_in_range(steps, direction)
+    def step_motor(self, steps: int, direction: bool, seconds_per_step: float = 1, check_limit=True, zeroing=False, cancellation_event: Event = None):
+        #print(f"stepping {steps} steps in {direction} dir at {seconds_per_step} sps")
+        if check_limit:
+            steps = self._limit_in_range(steps, direction)
         # Set direction
         GPIO.output(self.config.direction_pin, GPIO.HIGH if direction else GPIO.LOW)
         # Perform steps
@@ -93,24 +92,32 @@ class Motor(IMotor):
         # print(f'Done at {time.perf_counter()} for sps {seconds_per_step}')
 
     def _limit_in_range(self, steps: int, direction: bool) -> int:
-        max_steps = int(self.config.max_angle * self.config.degrees_per_step)
+        # Calculate the total steps that can be taken
+        full_range_angle = self.config.max_angle - self.config.offset_angle
+        max_steps = int(full_range_angle / self.config.degrees_per_step)
 
-        if direction == self.FORWARD:
+        # Check if requested steps exceeds max steps
+        if direction == self.config.forward_direction:
             potential_pos = self.current_step + steps
             if potential_pos <= max_steps:
                 return steps
             else:
+                self.logger.debug(f"{self.config.name} Limiting motion to max angle")
+                print(f"{self.config.name} Limiting motion to max angle")
                 return max_steps - self.current_step
+        # Or if requested steps is less than zero
         else:
             potential_pos = self.current_step - steps
             if potential_pos >= 0:
                 return steps
             else:
+                self.logger.debug(f"{self.config.name} Limiting motion to min angle (0). Requested step = {steps}, current steps = {self.current_step}, potential pos = {potential_pos}")
+                print(f"{self.config.name} Limiting motion to min angle (0). Requested step = {steps}, current steps = {self.current_step}, potential pos = {potential_pos}.")
                 return self.current_step
 
     def go_to(self, angle: float, degrees_per_second=1, check_limit=True, cancellation_event: Event = None):
-        self.logger.debug(
-            f"Go to called on {self.config.name}. Angle: {angle}, dps: {degrees_per_second}, checkLimit: {check_limit}")
+        self.logger.debug(f"Go to called on {self.config.name}. Angle: {angle}, dps: {degrees_per_second}, checkLimit: {check_limit}")
+        print(f"Go to called on {self.config.name}. Angle: {angle}, dps: {degrees_per_second}, checkLimit: {check_limit}")
         if angle == 0:
             return
         seconds_per_step = self._calculate_seconds_per_step(degrees_per_second)
@@ -127,6 +134,7 @@ class Motor(IMotor):
         current_angle = self.calculate_current_angle()
         print(f"calculated current angle as {current_angle}")
         target_rel_angle = angle - current_angle
+        print(f"Request to go to absolute angle {angle}. With current angle {current_angle}, target rel angle = {target_rel_angle}")
         self.go_to(target_rel_angle, degrees_per_second, check_limit, cancellation_event)
 
     def calculate_current_angle(self):
@@ -141,6 +149,7 @@ class Motor(IMotor):
                             seconds_per_step=self._calculate_seconds_per_step(config.zero_degrees_per_sec),
                             check_limit=False)
         self.current_step = 0
+        print("ZEROED!")
 
     def _calculate_seconds_per_step(self, degrees_per_second: float):
         return self.config.degrees_per_step / degrees_per_second

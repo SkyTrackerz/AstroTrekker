@@ -11,8 +11,9 @@ TURNTABLE = MotorConfig(
     enable_pin=16,
     direction_pin=36,
     max_angle=360,
+    offset_angle=180,
     limit_switch=LimitSwitch(pin=29),
-    forward_direction=IMotor.FORWARD
+    forward_direction=IMotor.BACKWARD
 )
 
 TURRET = MotorConfig(
@@ -23,8 +24,8 @@ TURRET = MotorConfig(
     step_pin=13,
     enable_pin=18,
     direction_pin=38,
-    max_angle=270,
-    offset_angle=5,
+    max_angle=180,
+    offset_angle=-85,
     limit_switch=LimitSwitch(pin=31),
     #limit_switch=KeyboardLimitSwitch(key='k'),
     forward_direction=IMotor.FORWARD
