@@ -27,6 +27,9 @@ class StarTracker(IStarTracker):
         # Position data given by star tracker GPS and magnetometer:
         self._compassHeading = 0  # deg around a comapss (dead N)
 
+        # Manages the threads used for concurrent motor execution
+        self.executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix='MotorThread')
+
         self.logger = logging.getLogger(__name__)
 
     # Called by program to update observatory to new star position (this function calls _calculate_target_configuration and _move)
@@ -84,61 +87,35 @@ class StarTracker(IStarTracker):
 
     # Function to run the go_to methods concurrently
     def run_go_tos_concurrently(self, dx, dy, x_speed, y_speed, cancellation_event: Event = None):
-       if cancellation_event is None:
-           cancellation_event = Event()
-        with ThreadPoolExecutor() as executor:
-            futures = [
-                executor.submit(self.turntable.go_to, dx, x_speed, True, cancellation_event),
-                executor.submit(self.turret.go_to, dy, y_speed, True, cancellation_event)
-                # Uncomment the following line if you need to include spin.go_to
-                # executor.submit(spin.go_to, -180, 60)
-            ]
-        try:
-            # Wait for all futures to complete
-            for future in futures:
-                future.result()
-        finally:
-            self.cleanup()
+        futures = [
+            self.executor.submit(self.turntable.go_to, dx, x_speed, True, cancellation_event),
+            self.executor.submit(self.turret.go_to, dy, y_speed, True, cancellation_event)
+            # Uncomment the following line if you need to include spin.go_to
+            # executor.submit(spin.go_to, -180, 60)
+        ]
+        # Wait for all futures to complete
+        for future in futures:
+            future.result()
+
+    def shutdown(self):
+        # Use wait=True if it's desired for ongoing tasks to finish
+        self.executor.shutdown()
+        for motor in [self.turntable, self.turret, self.spin]:
+            motor.disable()
+        self.logger.info("StarTracker succesfully shutdown")
         
-                
-    def cleanup_threads(self, executor, cancellation_event):
-        print("Cleaning up threads...")
-        self.logger.debug("Cleaning up threads...")
-        self.cancellation_event.set()
-        self.executor.shutdown(wait=True)
-        self.cancellation_event.clear()
-        print("Threads cleaned up!")
-        self.logger.debug("Cleaning up threads...")
-
     def zero(self):
-        """
-        # Create a new event loop for the current thread.
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
+        # TODO: Clear current thread pool executor?
+        futures = [
+            self.executor.submit(self.turntable.zero),
+            self.executor.submit(self.turret.zero)
+            # Uncomment the following line if you need to include spin.go_to
+            # executor.submit(spin.go_to, -180, 60)
+        ]
+        # Wait for all futures to complete
+        for future in futures:
+            future.result()
 
-        try:
-            # Now you can safely run asyncio operations in this thread.
-            loop.run_until_complete(
-                asyncio.gather(
-                    asyncio.to_thread(self.turntable.zero),
-                    asyncio.to_thread(self.turret.zero)
-                    # asyncio.to_thread(self.spin.zero,)
-                )
-            )
-        finally:
-            loop.close()
-        """
-        with ThreadPoolExecutor() as executor:
-            futures = [
-                executor.submit(self.turntable.zero),
-                executor.submit(self.turret.zero)
-                # Uncomment the following line if you need to include spin.go_to
-                # executor.submit(spin.go_to, -180, 60)
-            ]
-            # Wait for all futures to complete
-            for future in futures:
-                future.result()
-                
     """
     Returns a tuple of alt, az, spin
     """
