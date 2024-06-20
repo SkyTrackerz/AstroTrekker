@@ -15,7 +15,7 @@ class Program(ABC, Generic[T]):
         # TODO: Set max size, which blocks adding to the queue?
         self.command_queue = queue.Queue()
         self.cancellation_event = Event()
-        self.thread = threading.Thread(target=self._run)
+        self.thread = threading.Thread(target=self._run, name="ProgramThread")
         self._is_done = False
 
     @property
@@ -28,18 +28,6 @@ class Program(ABC, Generic[T]):
 
     def _run(self):
         while not self.cancellation_event.is_set():
-            """
-            Re-think need for commands and revisit
-            
-            try:
-                # If this ends up over-utilizing the CPU by executing too quickly, consider get-waiting for .01 seconds?
-                command = self.command_queue.get_nowait()
-                self.handle_command(command)
-            except queue.Empty:
-                self._is_done = self.execute(self.cancellation_event)
-                if self._is_done:
-                    break
-            """
             self._is_done = self.execute(self.cancellation_event)
             if self._is_done:
                 break

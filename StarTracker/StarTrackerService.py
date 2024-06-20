@@ -18,8 +18,6 @@ class StarTrackerService:
         # Entry point of logging setup in project
         logging.config.dictConfig(LOGGING_CONFIG)
         self.logger = logging.getLogger(__name__)
-        #self.current_program.start()
-
     """    
     def start_manual_control_program(self):
         # program = ManualControlProgram(self.star_tracker)
