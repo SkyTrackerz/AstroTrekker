@@ -5,6 +5,7 @@ import config
 from StarTracker.StarTrackerService import StarTrackerService
 from StarTracker.StarTracker import StarTracker
 from Motor.Motor import Motor
+from Motor.TurntableMotor import TurntableMotor
 from webapp.webapp import WebApp
 import argparse
 
@@ -24,7 +25,7 @@ if __name__ == '__main__':
         logger.info("Remote debugger is enabled.")
 
     star_tracker = StarTracker(
-        turntable=Motor(config.TURNTABLE),
+        turntable=TurntableMotor(config.TURNTABLE),
         turret=Motor(config.TURRET),
         spin=Motor(config.SPIN)
     )
