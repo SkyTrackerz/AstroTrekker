@@ -14,13 +14,16 @@ class LimitSwitch(ILimitSwitch):
         #GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
         GPIO.setup(pin, GPIO.IN)
         self.logger = logging.getLogger(__name__)
+        self.last_value: bool = False
         #GPIO.add_event_detect(pin, GPIO.FALLING)
 
     def isActive(self) -> bool:
         value = GPIO.input(self.pin)
         # print(f'Limit Switch value: {GPIO.input(self.pin)}')
         # self.logger.info()
-        return value
+        res = value and self.last_value
+        self.last_value = value
+        return res
 
     def add_active_callback(self, callback: Callable):
         #GPIO.add_event_callback(self.pin, callback)

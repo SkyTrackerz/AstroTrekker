@@ -31,6 +31,10 @@ class StarTracker(IStarTracker):
         self.executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix='MotorThread')
 
         self.logger = logging.getLogger(__name__)
+    
+    @property
+    def zeroed(self) -> bool:
+        return self.turntable.zeroed and self.turret.zeroed and self.spin.zeroed
 
     # Called by program to update observatory to new star position (this function calls _calculate_target_configuration and _move)
     def go_to(self, altitude, azimuth, degrees_per_second, cancellation_event: Event = None):
@@ -105,12 +109,10 @@ class StarTracker(IStarTracker):
         self.logger.info("StarTracker succesfully shutdown")
         
     def zero(self):
-        # TODO: Clear current thread pool executor?
         futures = [
             self.executor.submit(self.turntable.zero),
-            self.executor.submit(self.turret.zero)
-            # Uncomment the following line if you need to include spin.go_to
-            # executor.submit(spin.go_to, -180, 60)
+            self.executor.submit(self.turret.zero),
+            self.executor.submit(self.spin.zero)
         ]
         # Wait for all futures to complete
         for future in futures:

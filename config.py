@@ -28,13 +28,13 @@ TURRET = MotorConfig(
     offset_angle=-85,
     limit_switch=LimitSwitch(pin=31),
     #limit_switch=KeyboardLimitSwitch(key='k'),
-    forward_direction=IMotor.FORWARD
+    forward_direction=IMotor.BACKWARD
 )
 
 SPIN = MotorConfig(
     name="SPIN",
     degrees_per_full_step=1.8,
-    microsteps_per_step=1,
+    microsteps_per_step=16,
     gear_ratio=100 / 17,
     step_pin=15,
     enable_pin=22,

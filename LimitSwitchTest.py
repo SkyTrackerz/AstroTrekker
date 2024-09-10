@@ -1,7 +1,8 @@
 import config
 from Motor.Motor import Motor
+from Motor.TurntableMotor import TurntableMotor
 import time
-turntable = Motor(config.TURNTABLE)
+turntable = TurntableMotor(config.TURNTABLE)
 turret = Motor(config.TURRET)
 spin = Motor(config.SPIN)
 

@@ -38,6 +38,8 @@ class Motor(IMotor):
             self.limit_switch = config.limit_switch
             # self.limit_switch.add_active_callback(self.limit_switch_callback)
 
+        self.zeroed: bool = False
+
     def enable(self):
         if self.config.enable_pin:
             GPIO.output(self.config.enable_pin, GPIO.LOW)
@@ -145,10 +147,10 @@ class Motor(IMotor):
         if not self.config.limit_switch:
             pass
         while not self.config.limit_switch.isActive():
-            self.step_motor(10, not self.config.forward_direction,
-                            seconds_per_step=self._calculate_seconds_per_step(config.zero_degrees_per_sec),
+            self.step_motor(1, not self.config.forward_direction, seconds_per_step=self._calculate_seconds_per_step(config.zero_degrees_per_sec),
                             check_limit=False)
         self.current_step = 0
+        self.zeroed = True
         print("ZEROED!")
 
     def _calculate_seconds_per_step(self, degrees_per_second: float):
