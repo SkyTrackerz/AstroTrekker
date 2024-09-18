@@ -1,5 +1,7 @@
 import unittest
 from unittest.mock import patch
+
+from Location import Location
 from SkyCalculator import SkyCalculator
 
 class TestSkyCalculator(unittest.TestCase):
@@ -25,11 +27,11 @@ class TestSkyCalculator(unittest.TestCase):
         """
         Test setting a planetary target.
         """
-        calculator = SkyCalculator(0, 0)
+        calculator = SkyCalculator(location=Location(0,0))
         result = calculator.set_target('mars')  # Example with Mars
         self.assertTrue(result, "Setting a planetary target should return True.")
         self.assertIsNotNone(calculator.target, "Setting target should set Target field")
-        alt, az = calculator.get_local_alt_az()
+        alt, az, spin = calculator.get_local_alt_az_spin()
         self.assertIsNotNone(alt, "Getting altitude should return value")
         self.assertIsNotNone(az, "Getting azimuth should return value")
 
@@ -37,11 +39,11 @@ class TestSkyCalculator(unittest.TestCase):
         """
         Test setting a planetary target.
         """
-        calculator = SkyCalculator(0, 0)
+        calculator = SkyCalculator(location=Location(0,0))
         result = calculator.set_target(320)  # Example with Mars
         self.assertTrue(result, "Setting a planetary target should return True.")
         self.assertIsNotNone(calculator.target, "Setting target should set Target field")
-        alt, az = calculator.get_local_alt_az()
+        alt, az, spin = calculator.get_local_alt_az_spin()
         self.assertIsNotNone(alt, "Getting altitude should return value")
         self.assertIsNotNone(az, "Getting azimuth should return value")
 

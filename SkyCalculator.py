@@ -1,4 +1,5 @@
 import asyncio
+import math
 import os
 from datetime import datetime
 from pathlib import Path
@@ -32,7 +33,8 @@ class SkyCalculator:
         # Import planets
         self.earth = self.planets['earth']
         # Define current location
-        self.loc: GeographicPosition = self.earth + wgs84.latlon(location.latitude, location.longitude)
+        self.location = location
+        self.geoLoc = self.earth + wgs84.latlon(location.latitude, location.longitude)
         self.target = None
         logging.basicConfig(level=logging.WARNING)
 
@@ -41,7 +43,7 @@ class SkyCalculator:
             self.target = self.planets[target]
             return True
         if target in self.star_df.index:
-            self.target = Star.from_dataframe(self.star_df.loc[target])
+            self.target = Star.from_dataframe(self.star_df.geoLoc[target])
             return True
         return False
 
@@ -53,13 +55,13 @@ class SkyCalculator:
         else:
             t = ts.from_datetime(time)
         # Observe target object
-        astronomic = self.loc.at(t).observe(self.target)
+        astronomic = self.geoLoc.at(t).observe(self.target)
         alt, az, _ = astronomic.apparent().altaz()
 
         # Calculate spin axis using parallactic angle as per https://www.petermeadows.com/html/parallactic.html
         ra, dec, _ = astronomic.apparent().radec()
-        lat = self.loc.latitude
-        parallactic = asin(sin(az.radians) * cos(lat.radians) / cos(dec.radians))
+        lat = math.radians(self.location.latitude)
+        parallactic = asin(sin(az.radians) * cos(lat) / cos(dec.radians))
         return alt, az, Angle(radians=parallactic)
 
     def load_astro_data(self):
