@@ -26,9 +26,9 @@ class StarTrackProgram(Program[StarTrackProgramInput]):
         super().__init__()
 
     def execute(self, cancellation_event: Event) -> bool:
-        target_alt, target_az = self.sky_calculator.get_local_alt_az(next(self.time_gen))
+        target_alt, target_az, target_spin = self.sky_calculator.get_local_alt_az_spin(next(self.time_gen))
         print(f"Going to star coord {target_alt, target_az}")
-        StarTrackerService.StarTracker.go_to_absolute(target_alt.degrees, target_az.degrees,
+        StarTrackerService.StarTracker.go_to_absolute(target_alt.degrees, target_az.degrees, target_spin.degrees,
                                                       degrees_per_second=20,
                                                       cancellation_event=cancellation_event)
         # TODO: check if time has passed

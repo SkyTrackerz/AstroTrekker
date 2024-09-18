@@ -12,7 +12,7 @@ from skyfield.timelib import Time
 from skyfield.toposlib import GeographicPosition
 from skyfield.units import Angle
 from skyfield.data import hipparcos
-
+from math import sin, cos, asin
 from Location import Location
 from environment import Environment
 import logging
@@ -46,7 +46,7 @@ class SkyCalculator:
         return False
 
 
-    def get_local_alt_az(self, time: datetime = None) -> Tuple[Angle, Angle]:
+    def get_local_alt_az_spin(self, time: datetime = None) -> Tuple[Angle, Angle, Angle]:
         ts = self.skyfield_loader.timescale()
         if time is None:
             t = ts.now()
@@ -54,8 +54,13 @@ class SkyCalculator:
             t = ts.from_datetime(time)
         # Observe target object
         astronomic = self.loc.at(t).observe(self.target)
-        alt, az, dist = astronomic.apparent().altaz()
-        return alt, az
+        alt, az, _ = astronomic.apparent().altaz()
+
+        # Calculate spin axis using parallactic angle as per https://www.petermeadows.com/html/parallactic.html
+        ra, dec, _ = astronomic.apparent().radec()
+        lat = self.loc.latitude
+        parallactic = asin(sin(az.radians) * cos(lat.radians) / cos(dec.radians))
+        return alt, az, Angle(radians=parallactic)
 
     def load_astro_data(self):
         load = Loader('~/skyfield-data')

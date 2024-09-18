@@ -37,7 +37,7 @@ class StarTracker(IStarTracker):
         return self.turntable.zeroed and self.turret.zeroed and self.spin.zeroed
 
     # Called by program to update observatory to new star position (this function calls _calculate_target_configuration and _move)
-    def go_to(self, altitude, azimuth, degrees_per_second, cancellation_event: Event = None):
+    def go_to(self, altitude, azimuth, spin, degrees_per_second, cancellation_event: Event = None):
         # Calculate observatory altitude and azimuth based on orientation of observatory
         self._observatoryAltitude = altitude
         self._observatoryAzimuth = azimuth - self._compassHeading
@@ -49,11 +49,13 @@ class StarTracker(IStarTracker):
         self._move(altitude, azimuth, degrees_per_second, cancellation_event)
 
     # TODO: Knows how to get to an absolute angle based on current motor positions
-    def go_to_absolute(self, altitude, azimuth, degrees_per_second=10, cancellation_event: Event = None):
+    def go_to_absolute(self, altitude, azimuth, spin, degrees_per_second=10, cancellation_event: Event = None):
         dx = azimuth - self.turntable.current_angle
         self.logger.debug(f'DX = target ({azimuth}) - current ({self.turntable.current_angle}) = {dx}')
         dy = altitude - self.turret.current_angle
         self.logger.debug(f'DY = target ({altitude}) - current ({self.turret.current_angle}) = {dy}')
+        ds = spin - self.spin.current_angle
+        self.logger.debug(f'DS = target ({spin}) - current ({self.spin.current_angle}) = {ds}')
 
         # Calculate degrees of direct path
         # TODO: Fix Approximation, spherical trigonometry required for more accuracy
@@ -70,7 +72,7 @@ class StarTracker(IStarTracker):
         # This function is intended to be called within a new thread,
         # and sets up its own event loop for asyncio operations.
 
-        self.run_go_tos_concurrently(dx, dy, x_speed, y_speed, cancellation_event)
+        self.run_go_tos_concurrently(dx, dy, ds, x_speed, y_speed, self.spin.degrees_per_step, cancellation_event)
         """
         # Create a new event loop for the current thread.
         loop = asyncio.new_event_loop()
@@ -90,10 +92,11 @@ class StarTracker(IStarTracker):
         """
 
     # Function to run the go_to methods concurrently
-    def run_go_tos_concurrently(self, dx, dy, x_speed, y_speed, cancellation_event: Event = None):
+    def run_go_tos_concurrently(self, dx, dy, ds, x_speed, y_speed, s_speed, cancellation_event: Event = None):
         futures = [
             self.executor.submit(self.turntable.go_to, dx, x_speed, True, cancellation_event),
-            self.executor.submit(self.turret.go_to, dy, y_speed, True, cancellation_event)
+            self.executor.submit(self.turret.go_to, dy, y_speed, True, cancellation_event),
+            self.executor.submit(self.spin.go_to, ds, s_speed, True, cancellation_event)
             # Uncomment the following line if you need to include spin.go_to
             # executor.submit(spin.go_to, -180, 60)
         ]
