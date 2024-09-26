@@ -28,7 +28,7 @@ class StarTracker(IStarTracker):
         self._compassHeading = 0  # deg around a comapss (dead N)
 
         # Manages the threads used for concurrent motor execution
-        self.executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix='MotorThread')
+        self.executor = ThreadPoolExecutor(max_workers=3, thread_name_prefix='MotorThread')
 
         self.logger = logging.getLogger(__name__)
     
@@ -59,7 +59,7 @@ class StarTracker(IStarTracker):
 
         # Calculate degrees of direct path
         # TODO: Fix Approximation, spherical trigonometry required for more accuracy
-        overall_degrees = math.sqrt(dx*dx + dy*dy)
+        overall_degrees = math.sqrt(dx*dx + dy*dy + ds*ds)
         min_operable_degree = min((self.turntable.degrees_per_step, self.turret.degrees_per_step, self.spin.degrees_per_step))
         if overall_degrees < min_operable_degree:
             self.logger.debug(f"Skipping movement as requested overall angle {overall_degrees} is less than min operable angle {min_operable_degree}")
@@ -68,11 +68,15 @@ class StarTracker(IStarTracker):
         # Component speeds
         x_speed = abs(dx * inverse_overall_time)
         y_speed = abs(dy * inverse_overall_time)
-        self.logger.info(f"Speed components to move {degrees_per_second} deg/sec. X: {x_speed}, Y:{y_speed}")
+        s_speed = abs(ds * inverse_overall_time)
+        # TODO: Why this no worky
+        #spin_speed = abs(spin / inverse_overall_time)
+        #spin_speed = degrees_per_second
+        self.logger.info(f"Speed components to move {degrees_per_second} deg/sec. X: {x_speed}, Y:{y_speed} S: {s_speed}")
         # This function is intended to be called within a new thread,
         # and sets up its own event loop for asyncio operations.
 
-        self.run_go_tos_concurrently(dx, dy, ds, x_speed, y_speed, self.spin.degrees_per_step, cancellation_event)
+        self.run_go_tos_concurrently(dx, dy, ds, x_speed, y_speed, s_speed, cancellation_event)
         """
         # Create a new event loop for the current thread.
         loop = asyncio.new_event_loop()

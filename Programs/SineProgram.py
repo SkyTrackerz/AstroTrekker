@@ -7,21 +7,31 @@ from StarTracker.StarTrackerService import StarTrackerService
 
 @dataclass
 class SineProgramInput:
-    degreesPerSec: float
-    radius: float
-class SineProgram(Program):
+    numXSwivels: int
+    numYSwivels: int
+    rate: float
+
+class SineProgram(Program[SineProgramInput]):
     Input=SineProgramInput
     def __init__(self, input: SineProgramInput):
         self.input = input
-        # lets say move 1 degree at a time
-        center_x, center_y = 180, 
-        self.alt_path=[]
-        #self.path = StarTrackerService.StarTracker.
         super().__init__()
 
     def execute(self, cancellation_event: Event) -> bool:
-        # TODO: Add cancellation logic
-        for _ in range(self.input.numSwivels):
-            StarTrackerService.StarTracker.go_to_absolute(0,0,self.input.degreesPerSec, cancellation_event)
-            StarTrackerService.StarTracker.go_to_absolute(0,180,self.input.degreesPerSec, cancellation_event)
+        minAlt = 10
+        maxAlt = 80
+        minAz = 0
+        maxAz = 180
+        startY = 0
+        xMovePerSwiv = (maxAz - minAz) / self.input.numYSwivels
+        for x_i in range(self.input.numXSwivels):
+            for y_i in range(self.input.numYSwivels):
+                targetAlt = minAlt if y_i % 2 == 0 else maxAlt
+                targetAz = y_i * xMovePerSwiv
+                targetAz = targetAz if x_i % 2 == 0 else maxAz - targetAz
+                StarTrackerService.StarTracker.go_to_absolute(altitude=targetAlt,
+                                              azimuth=targetAz,
+                                              spin=0,
+                                              degrees_per_second=self.input.rate,
+                                              cancellation_event=cancellation_event)
         return True

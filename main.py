@@ -16,6 +16,9 @@ if __name__ == '__main__':
     parser.add_argument('--debug', action='store_true', help='Enable remote debugger')
     args = parser.parse_args()
 
+    # Set the logging level to INFO
+    logging.getLogger().setLevel(logging.INFO)
+
     logging.config.fileConfig('logging.conf')
     logger = logging.getLogger(__name__)
     logger.info("Starting!")

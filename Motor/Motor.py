@@ -71,7 +71,7 @@ class Motor(IMotor):
 
 
     def step_motor(self, steps: int, direction: bool, seconds_per_step: float = 1, check_limit=True, zeroing=False, cancellation_event: Event = None):
-        #print(f"stepping {steps} steps in {direction} dir at {seconds_per_step} sps")
+        #print(f"[{self.config.name}] stepping {steps} steps in {direction} dir at {seconds_per_step} sps")
         if check_limit:
             steps = self._limit_in_range(steps, direction)
         # Set direction
@@ -91,7 +91,7 @@ class Motor(IMotor):
             self.current_step += step_inc
             # print("*", end="")
             time.sleep(half_seconds_per_step)  # Adjust this delay for speed control
-        # print(f'Done at {time.perf_counter()} for sps {seconds_per_step}')
+        #print(f'[{self.config.name}] Done at {time.perf_counter()} for sps {seconds_per_step}')
 
     def _limit_in_range(self, steps: int, direction: bool) -> int:
         # Calculate the total steps that can be taken
@@ -118,12 +118,12 @@ class Motor(IMotor):
                 return self.current_step
 
     def go_to(self, angle: float, degrees_per_second=1, check_limit=True, cancellation_event: Event = None):
-        self.logger.debug(f"Go to called on {self.config.name}. Angle: {angle}, dps: {degrees_per_second}, checkLimit: {check_limit}")
-        print(f"Go to called on {self.config.name}. Angle: {angle}, dps: {degrees_per_second}, checkLimit: {check_limit}")
+        #self.logger.debug(f"[{self.config.name}] go_to() called with Angle: {angle}, dps: {degrees_per_second}, checkLimit: {check_limit}")
+        #print(f"[{self.config.name}] go_to() called with Angle: {angle}, dps: {degrees_per_second}, checkLimit: {check_limit}")
         if angle == 0:
             return
         seconds_per_step = self._calculate_seconds_per_step(degrees_per_second)
-        self.logger.debug(f"calculated seconds per step: {seconds_per_step}")
+        self.logger.debug(f"[{self.config.name}] go_to() calculated seconds per step: {seconds_per_step}")
         step_dir = angle > 0
         if not self.config.forward_direction:
             step_dir = not step_dir
@@ -134,9 +134,9 @@ class Motor(IMotor):
 
     def go_to_absolute(self, angle: float, degrees_per_second, check_limit=True, cancellation_event=None):
         current_angle = self.calculate_current_angle()
-        print(f"calculated current angle as {current_angle}")
+        #print(f"calculated current angle as {current_angle}")
         target_rel_angle = angle - current_angle
-        print(f"Request to go to absolute angle {angle}. With current angle {current_angle}, target rel angle = {target_rel_angle}")
+        #print(f"Request to go to absolute angle {angle}. With current angle {current_angle}, target rel angle = {target_rel_angle}")
         self.go_to(target_rel_angle, degrees_per_second, check_limit, cancellation_event)
 
     def calculate_current_angle(self):
@@ -154,6 +154,8 @@ class Motor(IMotor):
         print("ZEROED!")
 
     def _calculate_seconds_per_step(self, degrees_per_second: float):
+        #self.logger.debug(f"[{self.config.name}] _calculate_seconds_per_step() calculating using self.config.degrees_per_step={self.config.degrees_per_step} / degrees_per_second={degrees_per_second}")
+        #self.logger.debug(f"[{self.config.name}] _calculate_seconds_per_step() calculating degrees_per_step using (self.degrees_per_full_step={self.config.degrees_per_full_step} / self.microsteps_per_step={self.config.microsteps_per_step}) / gear_ratio={self.config.gear_ratio}" )
         return self.config.degrees_per_step / degrees_per_second
 
     def __del__(self):

@@ -50,6 +50,7 @@ class StarTrackerService:
         if self.current_program:
             self.logger.info(f"Stopping current program {self.current_program.__class__.__name__}")
             self.current_program.stop()
+        self.current_program = None
 
     # TODO: come up with generic way to send commands to programs
     async def send_joystick_command(self, x, y):

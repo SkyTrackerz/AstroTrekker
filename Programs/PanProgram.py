@@ -11,6 +11,7 @@ class PanProgramInput:
     rate: float  # TODO: replace rate with "TIME" so the user can say how long the shot is
     altitude: float
     azimuth: float
+    spin: float
 
 
 class PanProgram(Program[PanProgramInput]):
@@ -26,6 +27,7 @@ class PanProgram(Program[PanProgramInput]):
                          f"to ({self.input.altitude}, {self.input.azimuth}")
         StarTrackerService.StarTracker.go_to_absolute(altitude=self.input.altitude,
                                                       azimuth=self.input.azimuth,
+                                                      spin=self.input.spin,
                                                       degrees_per_second=self.input.rate,
                                                       cancellation_event=cancellation_event)
         return True
