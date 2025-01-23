@@ -14,7 +14,7 @@ TURNTABLE = MotorConfig(
     #offset_angle=-85,
     #offset_angle=0,
     limit_switch=LimitSwitch(pin=29),
-    forward_direction=IMotor.BACKWARD
+    forward_direction=IMotor.FORWARD
 )
 
 TURRET = MotorConfig(
