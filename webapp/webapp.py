@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from flask import Flask, render_template, request, jsonify, Response
 from flask_socketio import SocketIO
 import logging
@@ -5,12 +7,18 @@ from Location import Location
 #from Programs.ManualControlService import ManualControlProgram
 from Programs.StarTrackProgram import StarTrackProgram
 from Programs.Utilities import ProgramUtilities
+from Services.StarSearchService import StarSearchService
 from StarTracker.MockStarTracker import MockStarTracker
 from StarTracker.StarTrackerService import StarTrackerService, NoLocationException
 
+# Get the project root directory
+PROJECT_ROOT = Path(__file__).parent.parent
+
+# Configure paths
+ASTRONOMY_DATA_DIR = PROJECT_ROOT / 'Storage' / 'Astronomy'
 
 class WebApp:
-    def __init__(self, star_tracker_service: StarTrackerService):
+    def __init__(self, star_tracker_service: StarTrackerService, star_search_service: StarSearchService = None):
         self.star_tracker_service = star_tracker_service
 
         self.app = Flask(__name__)
