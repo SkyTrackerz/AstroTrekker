@@ -70,8 +70,10 @@
 <body>
     <div class="container">
         <h1>Star Tracker</h1>
-        <button class="location-button" onclick="getLocation()">Send Location & Elevation</button>
-    </div>
+        <input id="latitude" class="input-field" type="text" placeholder="Latitude">
+        <input id="longitude" class="input-field" type="text" placeholder="Longitude">
+        <input id="elevation" class="input-field" type="text" placeholder="Elevation (feet)">
+        <button class="submit-button" onclick="sendManualLocation()">Send Location</button>    </div>
     <div id="joyDiv" style="width:200px;height:200px;margin-bottom:20px;"></div>
     <br>
     <div id='editor_holder'></div>

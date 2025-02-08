@@ -42,6 +42,35 @@ function sendPositionToServer(position) {
             alert('Error sending location to server');
         });
 }
+
+function sendManualLocation() {
+    const latitude = document.getElementById("latitude").value;
+    const longitude = document.getElementById("longitude").value;
+    const altitude = document.getElementById("elevation").value;
+    const altitudeMeters = altitude * 0.3048;
+    if (!latitude || !longitude) {
+        alert("Please enter valid latitude and longitude.");
+        return;
+    }
+
+    fetch('/api/submit_location', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ latitude, longitude, altitudeMeters }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data);
+        alert('Location sent to server!');
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+        alert('Error sending location to server');
+    });
+}
+
 function showError(error) {
     switch (error.code) {
         case error.PERMISSION_DENIED:
