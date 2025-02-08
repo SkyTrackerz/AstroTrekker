@@ -1,5 +1,5 @@
 var socket = io();
-var joy = new JoyStick('joyDiv', {}, joystickCallback);
+//var joy = new JoyStick('joyDiv', {}, joystickCallback);
 function getLocation() {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(sendPositionToServer, showError);
@@ -7,11 +7,11 @@ function getLocation() {
         alert("Geolocation is not supported by this browser.");
     }
 }
-
+/*
 function joystickCallback(joystickData) {
     console.log("x: " + joystickData.x + " y: " + joystickData.y);
     socket.emit('joystick_update', { x: joystickData.x, y: joystickData.y });
-}
+}*/
 
 document.getElementById('cancel').addEventListener('click', function () {
     // Get the value from the editor

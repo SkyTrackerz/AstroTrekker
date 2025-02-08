@@ -99,7 +99,7 @@ class WebApp:
 
     def run(self):
         self.socketio.run(self.app, host='0.0.0.0',
-                          #ssl_context='adhoc',
+                        ssl_context='adhoc',
                         port=8080, debug=False, allow_unsafe_werkzeug=True)
 
 

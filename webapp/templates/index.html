@@ -1,89 +1,137 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <title>StarTracker Tether</title>
-
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
-
     <style>
+        :root {
+            --primary-color: #1a237e;
+            --secondary-color: #303f9f;
+            --background-color: #f5f7fa;
+            --text-color: #2c3e50;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            /*background: url('https://source.unsplash.com/1600x900/?space') no-repeat center center fixed; */
-            background-color: royalblue;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            margin: 0;
+            padding: 2rem;
         }
 
-        /* Overrides bootstrap colors */
-        .btn-secondary {
-            background-color: midnightblue;
-            /* New primary color */
-            border-color: midnightblue;
-            /* New primary border color */
-        }
-
-        .btn-secondary:hover {
-            background-color: midnightblue;
-            /* Darker primary color on hover */
-            border-color: midnightblue;
-            /* Darker primary border on hover */
-        }
-
-        .content {
-            padding: 20px;
-            text-align: center;
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
         }
 
         h1 {
-            font-size: 6em;
-            margin: 0.2em;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 2rem;
+            text-align: center;
         }
 
         .location-button {
-            background-color: midnightblue;
+            background-color: var(--primary-color);
             color: white;
-            padding: 20px 40px;
+            padding: 0.75rem 1.5rem;
             border: none;
-            border-radius: 5px;
-            font-size: 3em;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
             cursor: pointer;
-            transition: background-color 0.3s;
-            width: 80%;
-
-            /* Make the button wider */
-            max-width: 600px;
-            /* Maximum width */
-            margin: 20px auto;
+            transition: all 0.2s ease;
+            width: 100%;
+            max-width: 400px;
+            margin: 1rem auto;
+            display: block;
+            box-shadow: var(--shadow);
         }
 
         .location-button:hover {
-            background-color: midnightblue;
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        #editor_holder {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            margin: 2rem 0;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+        }
+
+        #submit, #cancel {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        #submit {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        #submit:hover {
+            background-color: var(--secondary-color);
+        }
+
+        #cancel {
+            background-color: #e0e0e0;
+            color: var(--text-color);
+        }
+
+        #cancel:hover {
+            background-color: #d0d0d0;
+        }
+
+        #get-params {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+        }
+
+        /* JsonEditor Bootstrap4 theme compatibility */
+        .je-ready {
+            background: transparent !important;
         }
     </style>
 </head>
-
 <body>
     <div class="container">
         <h1>Star Tracker</h1>
         <button class="location-button" onclick="getLocation()">Send Location & Elevation</button>
+        <div id='editor_holder'></div>
+        <div class="button-group">
+            <button id='submit'>Submit</button>
+            <button id='cancel'>Cancel</button>
+        </div>
+        <pre id="get-params"></pre>
     </div>
-    <div id="joyDiv" style="width:200px;height:200px;margin-bottom:20px;"></div>
-    <br>
-    <div id='editor_holder'></div>
-    <button id='submit'>Submit (alert)</button>
-    <button id='cancel'>Cancel</button>
-    <pre id="get-params"></pre>
+
     <script src="{{url_for('static', filename='js/joy.js')}}"></script>
     <script src="{{url_for('static', filename='js/socket.io.js')}}" crossorigin="anonymous"></script>
-
-    <!--<script src="https://cdn.jsdelivr.net/npm/@json-editor/json-editor@latest/dist/jsoneditor.min.js"></script>-->
     <script src="{{url_for('static', filename='js/jsoneditor.js')}}"></script>
     <script src="{{url_for('static', filename='js/index.js')}}"></script>
 </body>
-
 </html>
