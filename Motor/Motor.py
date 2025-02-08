@@ -40,6 +40,14 @@ class Motor(IMotor):
 
         self.zeroed: bool = False
 
+    @property
+    def zeroed(self) -> bool:
+        return self._zeroed
+
+    @zeroed.setter
+    def zeroed(self, value: bool):
+        self._zeroed = value
+
     def enable(self):
         if self.config.enable_pin:
             GPIO.output(self.config.enable_pin, GPIO.LOW)

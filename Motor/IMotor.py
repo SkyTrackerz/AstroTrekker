@@ -6,6 +6,11 @@ from typing import Optional
 class IMotor(ABC):
     BACKWARD = False
     FORWARD = not BACKWARD
+
+    @property
+    @abstractmethod
+    def zeroed(self) -> bool:
+        pass
     @abstractmethod
     def limit_switch_callback(self):
         pass
