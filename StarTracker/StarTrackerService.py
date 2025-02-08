@@ -11,6 +11,7 @@ from config_logging import LOGGING_CONFIG
 class StarTrackerService:
     StarTracker: IStarTracker = None
     Location: Location = None
+
     def __init__(self, star_tracker: IStarTracker, location: Location = None):
         StarTrackerService.StarTracker = star_tracker
         StarTrackerService.Location = location
@@ -20,6 +21,7 @@ class StarTrackerService:
         self.logger = logging.getLogger(__name__)
         if not StarTrackerService.StarTracker.zeroed:
             StarTrackerService.StarTracker.zero()
+
     """    
     def start_manual_control_program(self):
         # program = ManualControlProgram(self.star_tracker)
@@ -53,14 +55,15 @@ class StarTrackerService:
 
     # TODO: come up with generic way to send commands to programs
     async def send_joystick_command(self, x, y):
-        #if isinstance(self.current_program, ManualControlProgram):
+        # if isinstance(self.current_program, ManualControlProgram):
         #    self.current_program.handle_command(DirectionCommand(x, y))
-        #else:
+        # else:
         #    print("Not a manual control command! ")
         pass
 
     def set_location(self, location: Location):
         StarTrackerService.Location = location
+
 
 class NoLocationException(Exception):
     pass
