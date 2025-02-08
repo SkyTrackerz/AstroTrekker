@@ -72,7 +72,7 @@ class StarTracker(IStarTracker):
         # TODO: Why this no worky
         #spin_speed = abs(spin / inverse_overall_time)
         #spin_speed = degrees_per_second
-        self.logger.info(f"Speed components to move {degrees_per_second} deg/sec. X: {x_speed}, Y:{y_speed} S: {s_speed}")
+        #self.logger.info(f"Speed components to move {degrees_per_second} deg/sec. X: {x_speed}, Y:{y_speed} S: {s_speed}")
         # This function is intended to be called within a new thread,
         # and sets up its own event loop for asyncio operations.
 
