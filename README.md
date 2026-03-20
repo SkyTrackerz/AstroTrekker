@@ -2,8 +2,6 @@
 
 **A backpackable, autonomous robotic gimbal that tracks celestial bodies for astrophotography.**
 
-> IN ACTIVE DEVELOPMENT — FOLLOW FOR UPDATES!
-
 <p align="center">
   <img src="docs/epic-photo-outside.jpeg" width="32%" />
   <img src="docs/photo-close.jpeg" width="32%" />
